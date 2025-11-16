@@ -6,6 +6,8 @@
     <meta name="description" content="MUSEHUB-MASTER : plateforme collaborative pour artistes, galeries et amateurs d'art">
     <meta name="keywords" content="art, artistes, galeries, marketplace, événements, communauté">
     <title>MUSEHUB-MASTER — Plateforme artistique</title>
+    <!-- Favicon -->
+    <link rel="icon" href="/BO/assets/images/logo/logomuse.png" type="image/png">
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -14,12 +16,20 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="../FO/assets/css/style.css">
 </head>
-<body>
+<body class="video-background-body">
+    <!-- Full Page Video Background -->
+    <video class="full-page-video" autoplay muted loop playsinline>
+        <source src="/FO/assets/videos/stars.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    <div class="video-overlay"></div>
+    
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top transparent-nav">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="index.html">
-                <i class="fas fa-palette me-2"></i>MUSEHUB-MASTER
+            <a class="navbar-brand fw-bold d-flex align-items-center" href="index.html">
+                <img src="/BO/assets/images/logo/logomuse.png" alt="MUSEHUB-MASTER Logo" style="height: 60px; margin-right: 15px;">
+                <span>MUSEHUB-MASTER</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -56,26 +66,23 @@
     </nav>
 
     <!-- Hero Section -->
-    <section class="hero-section bg-primary text-white py-5">
-        <div class="container py-5">
+    <section class="hero-section text-white py-5 position-relative">
+        <div class="container py-5 position-relative" style="z-index: 2;">
             <div class="row align-items-center">
-                <div class="col-lg-6">
-                    <h1 class="display-4 fw-bold mb-4">Bienvenue sur MUSEHUB-MASTER</h1>
-                    <p class="lead mb-4">Mise en relation entre artistes, galeries et amateurs d'art pour partager, vendre et organiser des événements collaboratifs.</p>
-                    <div class="d-flex gap-3">
+                <div class="col-lg-12 text-center">
+                    <h1 class="display-4 fw-bold mb-4 hero-title">Bienvenue sur MUSEHUB-MASTER</h1>
+                    <p class="lead mb-4">“Uniting Artists, Galleries & Art Lovers.”</p>
+                    <div class="d-flex gap-3 justify-content-center">
                         <a href="register.html" class="btn btn-light btn-lg">Rejoindre la communauté</a>
                         <a href="artworks.html" class="btn btn-outline-light btn-lg">Découvrir les œuvres</a>
                     </div>
-                </div>
-                <div class="col-lg-6 text-center">
-                    <i class="fas fa-palette fa-10x opacity-50"></i>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Features Section -->
-    <section class="features-section py-5">
+    <section class="features-section py-5 transparent-section">
         <div class="container">
             <div class="text-center mb-5">
                 <h2 class="display-5 fw-bold mb-3">Que pouvez-vous faire ?</h2>
@@ -144,7 +151,7 @@
     </section>
 
     <!-- Latest Artworks Section -->
-    <section class="artworks-section py-5 bg-light">
+    <section class="artworks-section py-5 transparent-section">
         <div class="container">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="display-6 fw-bold mb-0">Dernières œuvres</h2>
@@ -155,8 +162,8 @@
                 <!-- Artwork Card 1 -->
                 <div class="col-md-6 col-lg-3">
                     <div class="card artwork-card h-100 border-0 shadow-sm">
-                        <div class="card-img-top bg-secondary" style="height: 250px; display: flex; align-items: center; justify-content: center;">
-                            <i class="fas fa-image fa-3x text-white opacity-50"></i>
+                        <div class="card-img-top" style="height: 250px; overflow: hidden;">
+                            <img src="/FO/assets/images/artwork-1.png" alt="Artwork 1" style="width: 100%; height: 100%; object-fit: cover;">
                         </div>
                         <div class="card-body">
                             <h5 class="card-title">Titre de l'œuvre</h5>
@@ -175,8 +182,8 @@
                 <!-- Artwork Card 2 -->
                 <div class="col-md-6 col-lg-3">
                     <div class="card artwork-card h-100 border-0 shadow-sm">
-                        <div class="card-img-top bg-secondary" style="height: 250px; display: flex; align-items: center; justify-content: center;">
-                            <i class="fas fa-image fa-3x text-white opacity-50"></i>
+                        <div class="card-img-top" style="height: 250px; overflow: hidden;">
+                            <img src="/FO/assets/images/artwork-2.png" alt="Artwork 2" style="width: 100%; height: 100%; object-fit: cover;">
                         </div>
                         <div class="card-body">
                             <h5 class="card-title">Titre de l'œuvre</h5>
@@ -195,8 +202,8 @@
                 <!-- Artwork Card 3 -->
                 <div class="col-md-6 col-lg-3">
                     <div class="card artwork-card h-100 border-0 shadow-sm">
-                        <div class="card-img-top bg-secondary" style="height: 250px; display: flex; align-items: center; justify-content: center;">
-                            <i class="fas fa-image fa-3x text-white opacity-50"></i>
+                        <div class="card-img-top" style="height: 250px; overflow: hidden;">
+                            <img src="/FO/assets/images/artwork-3.png" alt="Artwork 3" style="width: 100%; height: 100%; object-fit: cover;">
                         </div>
                         <div class="card-body">
                             <h5 class="card-title">Titre de l'œuvre</h5>
@@ -215,8 +222,8 @@
                 <!-- Artwork Card 4 -->
                 <div class="col-md-6 col-lg-3">
                     <div class="card artwork-card h-100 border-0 shadow-sm">
-                        <div class="card-img-top bg-secondary" style="height: 250px; display: flex; align-items: center; justify-content: center;">
-                            <i class="fas fa-image fa-3x text-white opacity-50"></i>
+                        <div class="card-img-top" style="height: 250px; overflow: hidden;">
+                            <img src="/FO/assets/images/artwork-4.png" alt="Artwork 4" style="width: 100%; height: 100%; object-fit: cover;">
                         </div>
                         <div class="card-body">
                             <h5 class="card-title">Titre de l'œuvre</h5>
@@ -236,7 +243,7 @@
     </section>
 
     <!-- Upcoming Events Section -->
-    <section class="events-section py-5">
+    <section class="events-section py-5 transparent-section">
         <div class="container">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="display-6 fw-bold mb-0">Événements à venir</h2>
@@ -288,7 +295,7 @@
     </section>
 
     <!-- CTA Section -->
-    <section class="cta-section bg-dark text-white py-5">
+    <section class="cta-section text-white py-5 transparent-section">
         <div class="container text-center py-5">
             <h2 class="display-5 fw-bold mb-4">Prêt à partager votre art ?</h2>
             <p class="lead mb-4">Rejoignez des milliers d'artistes et amateurs d'art sur MUSEHUB-MASTER</p>
@@ -297,10 +304,11 @@
     </section>
 
     <!-- Footer -->
-    <footer class="footer bg-light py-4">
+    <footer class="footer py-4 transparent-section">
         <div class="container">
             <div class="row">
                 <div class="col-md-4 mb-3">
+                    <img src="/BO/assets/images/logo/logomuse.png" alt="MUSEHUB-MASTER Logo" style="height: 70px; margin-bottom: 15px;">
                     <h5 class="fw-bold mb-3">MUSEHUB-MASTER</h5>
                     <p class="text-muted">Plateforme collaborative pour artistes, galeries et amateurs d'art.</p>
                 </div>
