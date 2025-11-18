@@ -1,0 +1,40 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Community - {{ community.name }} - MuseHub{% endblock %}
+
+{% block body %}
+<div class="container mt-5" style="max-width: 700px;">
+    <h2 class="mb-4"><i class="fas fa-edit text-primary me-2"></i> Edit Community</h2>
+
+    {{ form_start(form, {'attr': {'class': 'needs-validation'}}) }}
+        <div class="mb-3">
+            {{ form_label(form.name, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+            {{ form_widget(form.name, {'attr': {'class': 'form-control', 'placeholder': 'Community Name'}}) }}
+            {{ form_errors(form.name) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.description, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+            {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 5, 'placeholder': 'Describe your community'}}) }}
+            {{ form_errors(form.description) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.category, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+            {{ form_widget(form.category, {'attr': {'class': 'form-select'}}) }}
+            {{ form_errors(form.category) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.imageUrl, 'Image URL', {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+            {{ form_widget(form.imageUrl, {'attr': {'class': 'form-control', 'placeholder': 'http://...'}}) }}
+            {{ form_errors(form.imageUrl) }}
+        </div>
+
+        <button type="submit" class="btn btn-primary px-4 py-2 rounded-pill fw-semibold shadow-sm">
+            <i class="fas fa-save me-2"></i> Save Changes
+        </button>
+        <a href="{{ path('app_community_show', {'id': community.id}) }}" class="btn btn-outline-secondary ms-3 rounded-pill px-4 py-2 fw-semibold">Cancel</a>
+    {{ form_end(form) }}
+</div>
+{% endblock %}

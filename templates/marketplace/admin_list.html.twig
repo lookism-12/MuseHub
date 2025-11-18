@@ -1,0 +1,136 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Marketplace - MuseHub Admin{% endblock %}
+
+{% block body %}
+<div class="mb-4">
+    <h1 class="h3 mb-0">Gestion Marketplace</h1>
+    <p class="text-muted">Ventes et revenus</p>
+</div>
+
+<!-- Statistiques -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card" style="border-radius: 15px; border-left: 4px solid #10b981;">
+            <div class="card-body">
+                <h3 class="text-success">{{ revenue }} €</h3>
+                <p class="text-muted mb-0">Revenus totaux{% if period != 'all' %} ({{ period }}){% endif %}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card" style="border-radius: 15px; border-left: 4px solid #3b82f6;">
+            <div class="card-body">
+                <h3 class="text-primary">{{ transactions|length }}</h3>
+                <p class="text-muted mb-0">Transactions{% if period != 'all' %} ({{ period }}){% endif %}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtres -->
+<div class="card mb-4" style="border-radius: 15px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <div class="card-body">
+        <form method="GET" class="d-flex gap-3">
+            <select name="period" class="form-select" style="max-width: 200px;">
+                <option value="all" {{ period == 'all' ? 'selected' : '' }}>Toutes les périodes</option>
+                <option value="week" {{ period == 'week' ? 'selected' : '' }}>7 derniers jours</option>
+                <option value="month" {{ period == 'month' ? 'selected' : '' }}>30 derniers jours</option>
+            </select>
+            <button type="submit" class="btn btn-primary">Filtrer</button>
+        </form>
+    </div>
+</div>
+
+<!-- Transactions -->
+<div class="card mb-4" style="border-radius: 15px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="fas fa-receipt me-2"></i>Transactions</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>UUID</th>
+                        <th>Acheteur</th>
+                        <th>Montant</th>
+                        <th>Date</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transaction in transactions %}
+                    <tr>
+                        <td><code>{{ transaction.uuid|slice(0, 8) }}...</code></td>
+                        <td><code>{{ transaction.buyerUuid|slice(0, 8) }}...</code></td>
+                        <td><strong>{{ transaction.amount }} €</strong></td>
+                        <td>{{ transaction.date|date('d/m/Y H:i') }}</td>
+                        <td>
+                            <span class="badge bg-{{ transaction.status == 'paid' ? 'success' : 'warning' }}">
+                                {{ transaction.status }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4">
+                            <i class="fas fa-shopping-cart fa-2x text-muted mb-2"></i>
+                            <p class="text-muted">Aucune transaction</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Listings -->
+<div class="card" style="border-radius: 15px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="fas fa-tags me-2"></i>Annonces</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Artwork UUID</th>
+                        <th>Prix</th>
+                        <th>Stock</th>
+                        <th>Statut</th>
+                        <th>Créé le</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for listing in listings %}
+                    <tr>
+                        <td>{{ listing.id }}</td>
+                        <td><code>{{ listing.artworkUuid|slice(0, 8) }}...</code></td>
+                        <td><strong>{{ listing.price }} €</strong></td>
+                        <td>{{ listing.stock }}</td>
+                        <td>
+                            <span class="badge bg-{{ listing.status == 'available' ? 'success' : 'danger' }}">
+                                {{ listing.status }}
+                            </span>
+                        </td>
+                        <td>{{ listing.createdAt|date('d/m/Y') }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <i class="fas fa-tags fa-2x text-muted mb-2"></i>
+                            <p class="text-muted">Aucune annonce</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

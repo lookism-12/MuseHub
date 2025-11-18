@@ -1,0 +1,131 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Accueil - MuseHub{% endblock %}
+
+{% block body %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold mb-3">Bienvenue sur MuseHub</h1>
+        <p class="lead text-muted">Découvrez, partagez et achetez des œuvres d'art exceptionnelles</p>
+    </div>
+
+    <!-- Dernières œuvres -->
+    <section class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="h3"><i class="fas fa-paint-brush me-2"></i>Dernières œuvres</h2>
+            <a href="{{ path('artworks') }}" class="btn btn-primary">Voir tout <i class="fas fa-arrow-right ms-2"></i></a>
+        </div>
+        <div class="row g-4">
+            {% for artwork in artworks %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100">
+                    {% if artwork.imageUrl %}
+                        <img src="{{ artwork.imageUrl }}" alt="{{ artwork.title }}" class="artwork-image">
+                    {% else %}
+                        <div class="artwork-image bg-secondary d-flex align-items-center justify-content-center text-white">
+                            <i class="fas fa-image fa-3x"></i>
+                        </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ artwork.title }}</h5>
+                        <p class="text-muted small mb-2">
+                            {% if artwork.category %}
+                                <span class="badge bg-info">{{ artwork.category.name }}</span>
+                            {% endif %}
+                        </p>
+                        {% if artwork.description %}
+                            <p class="card-text small">{{ artwork.description|slice(0, 100) }}...</p>
+                        {% endif %}
+                        <div class="d-flex justify-content-between align-items-center">
+                            {% if artwork.price %}
+                                <span class="text-primary fw-bold">{{ artwork.price }} €</span>
+                            {% else %}
+                                <span class="text-muted">Prix sur demande</span>
+                            {% endif %}
+                            <a href="{{ path('artworks') }}" class="btn btn-sm btn-outline-primary">Voir</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle me-2"></i>Aucune œuvre disponible pour le moment.
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Événements à venir -->
+    <section class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="h3"><i class="fas fa-calendar-alt me-2"></i>Événements à venir</h2>
+            <a href="{{ path('events') }}" class="btn btn-primary">Voir tout <i class="fas fa-arrow-right ms-2"></i></a>
+        </div>
+        <div class="row g-4">
+            {% for event in events %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ event.title }}</h5>
+                        <p class="text-muted small mb-2">
+                            <i class="fas fa-clock me-1"></i>{{ event.dateTime|date('d/m/Y à H:i') }}
+                        </p>
+                        <p class="text-muted small mb-2">
+                            <i class="fas fa-map-marker-alt me-1"></i>{{ event.location == 'online' ? 'En ligne' : 'Sur place' }}
+                        </p>
+                        {% if event.description %}
+                            <p class="card-text small">{{ event.description|slice(0, 100) }}...</p>
+                        {% endif %}
+                        <a href="{{ path('events') }}" class="btn btn-sm btn-primary">En savoir plus</a>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle me-2"></i>Aucun événement à venir.
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Derniers posts de la communauté -->
+    <section>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="h3"><i class="fas fa-comments me-2"></i>Communauté</h2>
+            <a href="{{ path('community') }}" class="btn btn-primary">Voir tout <i class="fas fa-arrow-right ms-2"></i></a>
+        </div>
+        <div class="row g-4">
+            {% for post in posts %}
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <p class="card-text">{{ post.content|slice(0, 150) }}{% if post.content|length > 150 %}...{% endif %}</p>
+                        {% if post.imageUrl %}
+                            <img src="{{ post.imageUrl }}" alt="Post image" class="img-fluid rounded mb-2" style="max-height: 200px;">
+                        {% endif %}
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <small class="text-muted">
+                                <i class="fas fa-heart text-danger me-1"></i>{{ post.likesCount }} likes
+                            </small>
+                            <small class="text-muted">{{ post.createdAt|date('d/m/Y H:i') }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle me-2"></i>Aucun post pour le moment.
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+

@@ -1,0 +1,147 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Administration des œuvres{% endblock %}
+
+{% block body %}
+<div class="mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="h3 mb-0">Gestion des Œuvres</h1>
+            <p class="text-muted">Gérer les créations artistiques</p>
+        </div>
+        <div>
+            <a href="{{ path('admin_artwork_new') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Nouvelle œuvre
+            </a>
+            <a href="{{ path('admin_category_index') }}" class="btn btn-outline-primary">
+                <i class="fas fa-tags me-2"></i>Catégories
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Statistiques -->
+{% if stats is defined and stats %}
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card" style="border-radius: 15px; border-left: 4px solid #3b82f6;">
+            <div class="card-body">
+                <h3 class="text-primary">{{ stats.total }}</h3>
+                <p class="text-muted mb-0">Total</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card" style="border-radius: 15px; border-left: 4px solid #10b981;">
+            <div class="card-body">
+                <h3 class="text-success">{{ stats.visible }}</h3>
+                <p class="text-muted mb-0">Visibles</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card" style="border-radius: 15px; border-left: 4px solid #6b7280;">
+            <div class="card-body">
+                <h3 class="text-secondary">{{ stats.hidden }}</h3>
+                <p class="text-muted mb-0">Cachées</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <a href="{{ path('admin_artworks_stats') }}" class="card text-decoration-none" style="border-radius: 15px; border-left: 4px solid #f59e0b;">
+            <div class="card-body">
+                <h3 class="text-warning"><i class="fas fa-chart-bar"></i></h3>
+                <p class="text-muted mb-0">Statistiques</p>
+            </div>
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<!-- Filtres -->
+<div class="card mb-4" style="border-radius: 15px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <div class="card-body">
+        <form method="GET" class="d-flex gap-3">
+            <select name="category" class="form-select" style="max-width: 200px;">
+                <option value="">Toutes les catégories</option>
+                {% if categories is defined %}
+                    {% for category in categories %}
+                        <option value="{{ category.id }}" {% if categoryId is defined and categoryId == category.id %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                    {% endfor %}
+                {% endif %}
+            </select>
+            <select name="status" class="form-select" style="max-width: 200px;">
+                <option value="">Tous les statuts</option>
+                <option value="visible" {% if status is defined and status == 'visible' %}selected{% endif %}>Visible</option>
+                <option value="hidden" {% if status is defined and status == 'hidden' %}selected{% endif %}>Caché</option>
+            </select>
+            <button type="submit" class="btn btn-primary">Filtrer</button>
+            <a href="{{ path('admin_artworks_list') }}" class="btn btn-outline-secondary">Réinitialiser</a>
+        </form>
+    </div>
+</div>
+
+<!-- Liste des œuvres -->
+<div class="card" style="border-radius: 15px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Titre</th>
+                        <th>Artiste UUID</th>
+                        <th>Catégorie</th>
+                        <th>Prix</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for artwork in artworks %}
+                    <tr>
+                        <td>{{ artwork.id }}</td>
+                        <td><strong>{{ artwork.title }}</strong></td>
+                        <td><code>{{ artwork.artistUuid|slice(0, 8) }}...</code></td>
+                        <td>
+                            {% if artwork.category %}
+                                <span class="badge bg-info">{{ artwork.category.name }}</span>
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ artwork.price ? artwork.price ~ ' €' : '—' }}</td>
+                        <td>
+                            <span class="badge bg-{{ artwork.status == 'visible' ? 'success' : 'secondary' }}">
+                                {{ artwork.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{{ path('admin_artwork_edit', {id: artwork.id}) }}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-edit me-1"></i>Modifier
+                            </a>
+                            <form action="{{ path('admin_artwork_delete', {id: artwork.id}) }}" method="post" style="display:inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_artwork_' ~ artwork.id) }}">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Supprimer cette œuvre ?');">
+                                    <i class="fas fa-trash me-1"></i>Supprimer
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4">
+                            <i class="fas fa-paint-brush fa-2x text-muted mb-2"></i>
+                            <p class="text-muted">Aucune œuvre trouvée</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

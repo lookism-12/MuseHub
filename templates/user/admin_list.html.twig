@@ -1,0 +1,88 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Gestion Utilisateurs - MuseHub Admin{% endblock %}
+
+{% block body %}
+<div class="mb-4">
+    <h1 class="h3 mb-0">Gestion des Utilisateurs</h1>
+    <p class="text-muted">Gérer les utilisateurs, artistes et administrateurs</p>
+</div>
+
+<!-- Filtres -->
+<div class="card mb-4" style="border-radius: 15px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <div class="card-body">
+        <form method="GET" class="d-flex gap-3">
+            <select name="role" class="form-select" style="max-width: 200px;">
+                <option value="">Tous les rôles</option>
+                <option value="ROLE_USER" {{ currentRole == 'ROLE_USER' ? 'selected' : '' }}>Utilisateurs</option>
+                <option value="ROLE_ARTIST" {{ currentRole == 'ROLE_ARTIST' ? 'selected' : '' }}>Artistes</option>
+                <option value="ROLE_ADMIN" {{ currentRole == 'ROLE_ADMIN' ? 'selected' : '' }}>Administrateurs</option>
+            </select>
+            <button type="submit" class="btn btn-primary">Filtrer</button>
+            <a href="{{ path('admin_users_list') }}" class="btn btn-outline-secondary">Réinitialiser</a>
+        </form>
+    </div>
+</div>
+
+<!-- Liste des utilisateurs -->
+<div class="card" style="border-radius: 15px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Email</th>
+                        <th>Username</th>
+                        <th>Rôles</th>
+                        <th>Statut</th>
+                        <th>Créé le</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.username ?? '—' }}</td>
+                        <td>
+                            {% for role in user.roles %}
+                                <span class="badge bg-{{ role == 'ROLE_ADMIN' ? 'danger' : (role == 'ROLE_ARTIST' ? 'info' : 'secondary') }}">
+                                    {{ role }}
+                                </span>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% if user.isActive %}
+                                <span class="badge bg-success">Actif</span>
+                            {% else %}
+                                <span class="badge bg-danger">Suspendu</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ user.createdAt|date('d/m/Y') }}</td>
+                        <td>
+                            <form action="{{ path('admin_users_toggle', {id: user.id}) }}" method="POST" style="display:inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token('toggle_user_' ~ user.id) }}">
+                                <button type="submit" class="btn btn-sm btn-{{ user.isActive ? 'warning' : 'success' }}">
+                                    {{ user.isActive ? 'Suspendre' : 'Activer' }}
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4">
+                            <i class="fas fa-users fa-2x text-muted mb-2"></i>
+                            <p class="text-muted">Aucun utilisateur trouvé</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

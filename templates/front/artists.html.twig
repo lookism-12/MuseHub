@@ -1,0 +1,20 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Artistes - MuseHub{% endblock %}
+
+{% block body %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold mb-3">Nos Artistes</h1>
+        <p class="lead text-muted">Découvrez les talents de notre plateforme</p>
+    </div>
+
+    <div class="alert alert-info text-center">
+        <i class="fas fa-info-circle me-2"></i>Cette page sera bientôt disponible avec la liste complète des artistes.
+        <br>
+        <a href="{{ path('artworks') }}" class="btn btn-primary mt-3">Voir les œuvres</a>
+    </div>
+</div>
+{% endblock %}
+
+

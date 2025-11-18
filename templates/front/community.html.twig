@@ -1,0 +1,401 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Communauté - MuseHub{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .post-feed {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    .post-item {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .post-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .post-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    .post-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 1.2rem;
+        margin-right: 15px;
+    }
+    .post-content {
+        line-height: 1.6;
+        margin-bottom: 15px;
+        white-space: pre-wrap;
+    }
+    .post-image {
+        border-radius: 10px;
+        max-height: 500px;
+        width: 100%;
+        object-fit: cover;
+        margin-bottom: 15px;
+    }
+    .post-actions {
+        display: flex;
+        gap: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #e5e7eb;
+    }
+    .post-action-btn {
+        border: none;
+        background: none;
+        color: #6b7280;
+        cursor: pointer;
+        padding: 8px 15px;
+        border-radius: 8px;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .post-action-btn:hover {
+        background: #f3f4f6;
+        color: var(--primary-color);
+    }
+    .post-action-btn.liked {
+        color: #ef4444;
+    }
+    .post-action-btn.liked:hover {
+        background: #fef2f2;
+    }
+    .comments-section {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #e5e7eb;
+    }
+    .comment-item {
+        padding: 10px 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+    .comment-item:last-child {
+        border-bottom: none;
+    }
+    .comment-header {
+        font-size: 0.9rem;
+        color: #6b7280;
+        margin-bottom: 5px;
+    }
+    .comment-content {
+        color: #374151;
+    }
+    .comment-form {
+        margin-top: 15px;
+    }
+    .comment-input-group {
+        display: flex;
+        gap: 10px;
+    }
+    .comment-input-group input {
+        flex: 1;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold mb-3">Communauté</h1>
+        <p class="lead text-muted">Partagez et découvrez avec la communauté</p>
+    </div>
+
+    <div class="post-feed">
+        <!-- Formulaire de création de post -->
+        {% if app.user %}
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title mb-3">
+                    <i class="fas fa-edit me-2"></i>Créer un nouveau post
+                </h5>
+                <form action="{{ path('web_posts_create') }}" method="POST" id="postForm">
+                    <div class="mb-3">
+                        <textarea class="form-control" name="content" rows="4" placeholder="Quoi de neuf ? Partagez vos pensées avec la communauté..." required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <input type="url" class="form-control" name="image_url" placeholder="URL de l'image (optionnel)">
+                    </div>
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-2"></i>Publier
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <div class="card mb-4">
+            <div class="card-body text-center py-4">
+                <i class="fas fa-lock fa-2x text-muted mb-3"></i>
+                <p class="mb-3">Connectez-vous pour partager avec la communauté</p>
+                <a href="{{ path('login') }}" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt me-2"></i>Se connecter
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Liste des posts -->
+        {% for post in posts %}
+        <div class="post-item" data-post-id="{{ post.id }}">
+            <div class="post-header">
+                <div class="post-avatar">
+                    {{ post.authorUuid|slice(0, 1)|upper }}
+                </div>
+                <div class="flex-grow-1">
+                    <h6 class="mb-0 fw-bold">
+                        <i class="fas fa-user-circle me-2 text-primary"></i>
+                        Utilisateur {{ post.authorUuid|slice(0, 8) }}...
+                    </h6>
+                    <small class="text-muted">
+                        <i class="fas fa-clock me-1"></i>{{ post.createdAt|date('d/m/Y à H:i') }}
+                    </small>
+                </div>
+            </div>
+
+            <div class="post-content">
+                <p class="mb-0">{{ post.content|nl2br }}</p>
+            </div>
+
+            {% if post.imageUrl %}
+            <div>
+                <img src="{{ post.imageUrl }}" alt="Post image" class="post-image">
+            </div>
+            {% endif %}
+
+            <div class="post-actions">
+                <button class="post-action-btn like-btn" data-post-id="{{ post.id }}">
+                    <i class="fas fa-heart"></i>
+                    <span class="like-count">{{ post.likesCount }}</span>
+                </button>
+                <button class="post-action-btn comment-toggle-btn" data-post-id="{{ post.id }}">
+                    <i class="fas fa-comments"></i>
+                    <span class="comment-count">{{ post.comments|length }}</span>
+                </button>
+            </div>
+
+            <!-- Section commentaires (cachée par défaut) -->
+            <div class="comments-section" id="comments-{{ post.id }}" style="display: none;">
+                <h6 class="mb-3"><i class="fas fa-comments me-2"></i>Commentaires</h6>
+                
+                <!-- Liste des commentaires -->
+                <div id="comments-list-{{ post.id }}">
+                    {% for comment in post.comments %}
+                    <div class="comment-item">
+                        <div class="comment-header">
+                            <i class="fas fa-user-circle me-1"></i>
+                            Utilisateur {{ comment.commenterUuid|slice(0, 8) }}...
+                            <span class="ms-2">
+                                <i class="fas fa-clock me-1"></i>{{ comment.createdAt|date('d/m/Y H:i') }}
+                            </span>
+                        </div>
+                        <div class="comment-content">{{ comment.content|nl2br }}</div>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-3">Aucun commentaire pour le moment</p>
+                    {% endfor %}
+                </div>
+
+                <!-- Formulaire de commentaire -->
+                {% if app.user %}
+                <div class="comment-form">
+                    <form class="comment-input-group" data-post-id="{{ post.id }}" onsubmit="submitComment(event, {{ post.id }})">
+                        <input type="text" class="form-control" name="content" placeholder="Écrivez un commentaire..." required>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+                {% else %}
+                <div class="text-center py-2">
+                    <a href="{{ path('login') }}" class="btn btn-sm btn-outline-primary">Se connecter pour commenter</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                <h5 class="mb-3">Aucun post pour le moment</h5>
+                <p class="text-muted mb-4">Soyez le premier à partager quelque chose avec la communauté !</p>
+                {% if not app.user %}
+                <a href="{{ path('login') }}" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt me-2"></i>Se connecter pour publier
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+    // Initialize after page load
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle comments section
+        document.querySelectorAll('.comment-toggle-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const postId = this.dataset.postId;
+                const commentsSection = document.getElementById('comments-' + postId);
+                if (commentsSection.style.display === 'none') {
+                    commentsSection.style.display = 'block';
+                    loadComments(postId);
+                } else {
+                    commentsSection.style.display = 'none';
+                }
+            });
+        });
+
+        // Like functionality
+        document.querySelectorAll('.like-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const postId = this.dataset.postId;
+                likePost(postId);
+            });
+        });
+    });
+
+    function likePost(postId) {
+        fetch('/api/posts/' + postId + '/like', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin'
+        })
+        .then(response => {
+            if (response.status === 401) {
+                alert('Veuillez vous connecter pour aimer un post.');
+                window.location.href = '/login';
+                return null;
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data && data.likes_count !== undefined) {
+                const likeBtn = document.querySelector(`.like-btn[data-post-id="${postId}"]`);
+                const likeCount = likeBtn.querySelector('.like-count');
+                likeCount.textContent = data.likes_count;
+                likeBtn.classList.add('liked');
+                
+                // Animation
+                likeBtn.style.transform = 'scale(1.2)';
+                setTimeout(() => {
+                    likeBtn.style.transform = 'scale(1)';
+                }, 200);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+
+    function loadComments(postId) {
+        fetch('/api/posts/' + postId + '/comments')
+            .then(response => response.json())
+            .then(comments => {
+                const commentsList = document.getElementById('comments-list-' + postId);
+                if (comments.length === 0) {
+                    commentsList.innerHTML = '<p class="text-muted text-center py-3">Aucun commentaire pour le moment</p>';
+                } else {
+                    commentsList.innerHTML = comments.map(comment => {
+                        const date = new Date(comment.created_at);
+                        const formattedDate = date.toLocaleDateString('fr-FR', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                        return `
+                            <div class="comment-item">
+                                <div class="comment-header">
+                                    <i class="fas fa-user-circle me-1"></i>
+                                    Utilisateur ${comment.commenter_uuid.substring(0, 8)}...
+                                    <span class="ms-2">
+                                        <i class="fas fa-clock me-1"></i>${formattedDate}
+                                    </span>
+                                </div>
+                                <div class="comment-content">${comment.content.replace(/\n/g, '<br>')}</div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+                
+                // Update comment count
+                const commentBtn = document.querySelector(`.comment-toggle-btn[data-post-id="${postId}"]`);
+                if (commentBtn) {
+                    const commentCount = commentBtn.querySelector('.comment-count');
+                    if (commentCount) {
+                        commentCount.textContent = comments.length;
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error loading comments:', error);
+            });
+    }
+
+    function submitComment(event, postId) {
+        event.preventDefault();
+        const form = event.target;
+        const content = form.querySelector('input[name="content"]').value;
+        
+        if (!content.trim()) {
+            return;
+        }
+        
+        fetch('/api/posts/' + postId + '/comments', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ content: content }),
+            credentials: 'same-origin'
+        })
+        .then(response => {
+            if (response.status === 401) {
+                alert('Veuillez vous connecter pour commenter.');
+                window.location.href = '/login';
+                return null;
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data && data.id) {
+                form.querySelector('input[name="content"]').value = '';
+                loadComments(postId);
+            } else if (data && data.error) {
+                alert('Erreur: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Erreur lors de l\'envoi du commentaire.');
+        });
+    }
+</script>
+{% endblock %}

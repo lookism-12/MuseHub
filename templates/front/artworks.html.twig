@@ -1,0 +1,114 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Œuvres - MuseHub{% endblock %}
+
+{% block body %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold mb-3">Galerie d'Œuvres</h1>
+        <p class="lead text-muted">Découvrez notre collection d'œuvres d'art</p>
+    </div>
+
+    <!-- Formulaire de création d'œuvre -->
+    {% if app.user and ('ROLE_ARTIST' in app.user.roles or 'ROLE_ADMIN' in app.user.roles) %}
+    <div class="card mb-5">
+        <div class="card-body">
+            <h5 class="card-title mb-3">
+                <i class="fas fa-plus-circle me-2"></i>Ajouter une nouvelle œuvre
+            </h5>
+            <form action="{{ path('web_artworks_create') }}" method="POST" id="artworkForm">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Titre *</label>
+                        <input type="text" class="form-control" name="title" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Prix (€)</label>
+                        <input type="number" step="0.01" class="form-control" name="price">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-control" name="description" rows="3"></textarea>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">URL de l'image</label>
+                        <input type="url" class="form-control" name="image_url">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Catégorie</label>
+                        <select class="form-select" name="category_id">
+                            <option value="">Aucune catégorie</option>
+                            {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Statut</label>
+                    <select class="form-select" name="status">
+                        <option value="visible" selected>Visible</option>
+                        <option value="hidden">Masqué</option>
+                    </select>
+                </div>
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Créer l'œuvre
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row g-4">
+        {% for artwork in artworks %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100">
+                {% if artwork.imageUrl %}
+                    <img src="{{ artwork.imageUrl }}" alt="{{ artwork.title }}" class="artwork-image">
+                {% else %}
+                    <div class="artwork-image bg-secondary d-flex align-items-center justify-content-center text-white">
+                        <i class="fas fa-image fa-3x"></i>
+                    </div>
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ artwork.title }}</h5>
+                    <p class="text-muted small mb-2">
+                        {% if artwork.category %}
+                            <span class="badge bg-info">{{ artwork.category.name }}</span>
+                        {% endif %}
+                        <span class="badge bg-{{ artwork.status == 'visible' ? 'success' : 'secondary' }}">
+                            {{ artwork.status }}
+                        </span>
+                    </p>
+                    {% if artwork.description %}
+                        <p class="card-text">{{ artwork.description|slice(0, 150) }}{% if artwork.description|length > 150 %}...{% endif %}</p>
+                    {% endif %}
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        {% if artwork.price %}
+                            <span class="text-primary fw-bold fs-5">{{ artwork.price }} €</span>
+                        {% else %}
+                            <span class="text-muted">Prix sur demande</span>
+                        {% endif %}
+                        <a href="#" class="btn btn-sm btn-primary">Voir détails</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle me-2"></i>Aucune œuvre disponible pour le moment.
+                <br>
+                <a href="{{ path('admin_dashboard') }}" class="btn btn-primary mt-3">Ajouter une œuvre (Admin)</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+
