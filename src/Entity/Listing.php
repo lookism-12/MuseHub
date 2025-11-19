@@ -18,10 +18,10 @@ class Listing
     private ?string $uuid = null;
 
     #[ORM\Column(length: 36)]
-    private string $artworkUuid;
+    private string $artworkUuid = '';
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
-    private string $price;
+    private string $price = '0.00';
 
     #[ORM\Column(type: 'integer')]
     private int $stock = 1;

@@ -12,10 +12,10 @@ class Post
     private ?int $id = null;
 
     #[ORM\Column(type:"string")]
-    private string $authorUuid;
+    private string $authorUuid = '';
 
     #[ORM\Column(type:"text")]
-    private string $content;
+    private string $content = '';
 
     #[ORM\Column(type:"string", nullable:true)]
     private ?string $imageUrl = null;

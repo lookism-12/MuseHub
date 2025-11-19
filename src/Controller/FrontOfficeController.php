@@ -6,6 +6,7 @@ use App\Repository\ArtworkRepository;
 use App\Repository\CategoryRepository;
 use App\Repository\EventRepository;
 use App\Repository\ListingRepository;
+use App\Repository\ParticipantRepository;
 use App\Repository\PostRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,7 +19,8 @@ class FrontOfficeController extends AbstractController
         private CategoryRepository $categoryRepository,
         private EventRepository $eventRepository,
         private ListingRepository $listingRepository,
-        private PostRepository $postRepository
+        private PostRepository $postRepository,
+        private ParticipantRepository $participantRepository
     ) {
     }
 
@@ -67,9 +69,19 @@ class FrontOfficeController extends AbstractController
     public function events(): Response
     {
         $events = $this->eventRepository->findUpcoming();
+        $participationMap = [];
+        $user = $this->getUser();
+
+        if ($user) {
+            $participations = $this->participantRepository->findByParticipantUuid($user->getUuid());
+            foreach ($participations as $participant) {
+                $participationMap[$participant->getEventUuid()] = true;
+            }
+        }
 
         return $this->render('front/events.html.twig', [
             'events' => $events,
+            'participationMap' => $participationMap,
         ]);
     }
 
@@ -90,6 +102,19 @@ class FrontOfficeController extends AbstractController
         return $this->render('front/marketplace.html.twig', [
             'listings' => $listings,
             'userArtworks' => $userArtworks,
+        ]);
+    }
+
+    #[Route('/marketplace/offers/{id}', name: 'marketplace_offer_show', requirements: ['id' => '\d+'])]
+    public function marketplaceOffer(int $id): Response
+    {
+        $listing = $this->listingRepository->find($id);
+        if (!$listing) {
+            throw $this->createNotFoundException('Annonce introuvable');
+        }
+
+        return $this->render('front/marketplace_offer.html.twig', [
+            'listing' => $listing,
         ]);
     }
 

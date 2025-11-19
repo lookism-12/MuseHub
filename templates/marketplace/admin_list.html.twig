@@ -3,9 +3,14 @@
 {% block title %}Marketplace - MuseHub Admin{% endblock %}
 
 {% block body %}
-<div class="mb-4">
-    <h1 class="h3 mb-0">Gestion Marketplace</h1>
-    <p class="text-muted">Ventes et revenus</p>
+<div class="mb-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+    <div>
+        <h1 class="h3 mb-0">Gestion Marketplace</h1>
+        <p class="text-muted mb-0">Ventes et revenus</p>
+    </div>
+    <a href="{{ path('admin_marketplace_listing_new') }}" class="btn btn-primary">
+        <i class="fas fa-plus-circle me-2"></i>Nouvelle annonce
+    </a>
 </div>
 
 <!-- Statistiques -->
@@ -31,13 +36,28 @@
 <!-- Filtres -->
 <div class="card mb-4" style="border-radius: 15px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
     <div class="card-body">
-        <form method="GET" class="d-flex gap-3">
-            <select name="period" class="form-select" style="max-width: 200px;">
-                <option value="all" {{ period == 'all' ? 'selected' : '' }}>Toutes les périodes</option>
-                <option value="week" {{ period == 'week' ? 'selected' : '' }}>7 derniers jours</option>
-                <option value="month" {{ period == 'month' ? 'selected' : '' }}>30 derniers jours</option>
-            </select>
-            <button type="submit" class="btn btn-primary">Filtrer</button>
+        <form method="GET" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label text-muted small mb-1">Période</label>
+                <select name="period" class="form-select">
+                    <option value="all" {{ period == 'all' ? 'selected' : '' }}>Toutes les périodes</option>
+                    <option value="week" {{ period == 'week' ? 'selected' : '' }}>7 derniers jours</option>
+                    <option value="month" {{ period == 'month' ? 'selected' : '' }}>30 derniers jours</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label text-muted small mb-1">Statut des annonces</label>
+                <select name="status" class="form-select">
+                    {% set listingStatuses = {'all':'Tous','available':'Disponibles','paused':'En pause','sold_out':'Épuisés'} %}
+                    {% for key, label in listingStatuses %}
+                        <option value="{{ key }}" {{ status == key ? 'selected' : '' }}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">Appliquer</button>
+                <a href="{{ path('admin_marketplace_list') }}" class="btn btn-outline-secondary">Réinitialiser</a>
+            </div>
         </form>
     </div>
 </div>
@@ -102,6 +122,7 @@
                         <th>Stock</th>
                         <th>Statut</th>
                         <th>Créé le</th>
+                        <th class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -112,11 +133,25 @@
                         <td><strong>{{ listing.price }} €</strong></td>
                         <td>{{ listing.stock }}</td>
                         <td>
-                            <span class="badge bg-{{ listing.status == 'available' ? 'success' : 'danger' }}">
+                            {% set badge = listing.status == 'available' ? 'success' : (listing.status == 'paused' ? 'warning' : 'danger') %}
+                            <span class="badge bg-{{ badge }}">
                                 {{ listing.status }}
                             </span>
                         </td>
                         <td>{{ listing.createdAt|date('d/m/Y') }}</td>
+                        <td>
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="{{ path('admin_marketplace_listing_edit', {id: listing.id}) }}" class="btn btn-sm btn-outline-secondary">
+                                    Modifier
+                                </a>
+                                <form action="{{ path('admin_marketplace_listing_delete', {id: listing.id}) }}" method="POST" onsubmit="return confirm('Supprimer cette annonce ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_listing_' ~ listing.id) }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        Supprimer
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
                     </tr>
                     {% else %}
                     <tr>

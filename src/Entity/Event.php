@@ -18,19 +18,19 @@ class Event
     private ?string $uuid = null;
 
     #[ORM\Column(length: 255)]
-    private string $title;
+    private string $title = '';
 
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $description = null;
 
     #[ORM\Column(type: 'datetime_immutable')]
-    private \DateTimeImmutable $dateTime;
+    private ?\DateTimeImmutable $dateTime = null;
 
     #[ORM\Column(length: 50)]
-    private string $location; // 'online' or 'offline'
+    private string $location = 'online'; // 'online' or 'offline'
 
     #[ORM\Column(length: 36)]
-    private string $organiserUuid;
+    private string $organiserUuid = '';
 
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $createdAt;
@@ -83,7 +83,7 @@ class Event
         return $this;
     }
 
-    public function getDateTime(): \DateTimeImmutable
+    public function getDateTime(): ?\DateTimeImmutable
     {
         return $this->dateTime;
     }

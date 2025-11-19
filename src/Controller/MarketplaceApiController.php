@@ -29,9 +29,43 @@ class MarketplaceApiController extends AbstractController
     }
 
     #[Route('', name: 'api_marketplace_list', methods: ['GET'])]
-    public function list(): JsonResponse
+    public function list(Request $request): JsonResponse
     {
-        $listings = $this->listingRepository->findAvailable();
+        $status = $request->query->get('status', 'available');
+        $artistUuid = $request->query->get('artist_uuid');
+        $minPrice = $request->query->get('min_price');
+        $maxPrice = $request->query->get('max_price');
+        $page = max(1, (int)$request->query->get('page', 1));
+        $limit = min(100, max(1, (int)$request->query->get('limit', 20)));
+        $offset = ($page - 1) * $limit;
+
+        $qb = $this->listingRepository->createQueryBuilder('l');
+
+        if ($status !== 'all') {
+            $statusValue = $status === 'available' ? 'available' : $status;
+            $qb->andWhere('l.status = :status')->setParameter('status', $statusValue);
+        }
+
+        if ($artistUuid) {
+            $qb->andWhere('l.artworkUuid LIKE :artistUuid')
+                ->setParameter('artistUuid', $artistUuid . '%');
+        }
+
+        if ($minPrice !== null) {
+            $qb->andWhere('l.price >= :minPrice')->setParameter('minPrice', $minPrice);
+        }
+        if ($maxPrice !== null) {
+            $qb->andWhere('l.price <= :maxPrice')->setParameter('maxPrice', $maxPrice);
+        }
+
+        $qb->orderBy('l.createdAt', 'DESC');
+
+        $total = (clone $qb)->select('COUNT(l.id)')->getQuery()->getSingleScalarResult();
+
+        $listings = $qb->setFirstResult($offset)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
 
         $data = array_map(function (Listing $listing) {
             return [
@@ -41,10 +75,16 @@ class MarketplaceApiController extends AbstractController
                 'price' => $listing->getPrice(),
                 'stock' => $listing->getStock(),
                 'status' => $listing->getStatus(),
+                'created_at' => $listing->getCreatedAt()->format('Y-m-d H:i:s'),
             ];
         }, $listings);
 
-        return new JsonResponse($data);
+        return new JsonResponse([
+            'data' => $data,
+            'page' => $page,
+            'limit' => $limit,
+            'total' => (int)$total,
+        ]);
     }
 
     #[Route('/listing', name: 'api_marketplace_create_listing', methods: ['POST'])]

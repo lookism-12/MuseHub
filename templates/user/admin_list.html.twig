@@ -3,23 +3,37 @@
 {% block title %}Gestion Utilisateurs - MuseHub Admin{% endblock %}
 
 {% block body %}
-<div class="mb-4">
-    <h1 class="h3 mb-0">Gestion des Utilisateurs</h1>
-    <p class="text-muted">Gérer les utilisateurs, artistes et administrateurs</p>
+<div class="mb-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+    <div>
+        <h1 class="h3 mb-0">Gestion des Utilisateurs</h1>
+        <p class="text-muted mb-0">Gérer les utilisateurs, artistes et administrateurs</p>
+    </div>
+    <a href="{{ path('admin_users_new') }}" class="btn btn-primary">
+        <i class="fas fa-user-plus me-2"></i>Nouvel utilisateur
+    </a>
 </div>
 
 <!-- Filtres -->
 <div class="card mb-4" style="border-radius: 15px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
     <div class="card-body">
-        <form method="GET" class="d-flex gap-3">
-            <select name="role" class="form-select" style="max-width: 200px;">
-                <option value="">Tous les rôles</option>
-                <option value="ROLE_USER" {{ currentRole == 'ROLE_USER' ? 'selected' : '' }}>Utilisateurs</option>
-                <option value="ROLE_ARTIST" {{ currentRole == 'ROLE_ARTIST' ? 'selected' : '' }}>Artistes</option>
-                <option value="ROLE_ADMIN" {{ currentRole == 'ROLE_ADMIN' ? 'selected' : '' }}>Administrateurs</option>
-            </select>
-            <button type="submit" class="btn btn-primary">Filtrer</button>
-            <a href="{{ path('admin_users_list') }}" class="btn btn-outline-secondary">Réinitialiser</a>
+        <form method="GET" class="row g-3 align-items-center">
+            <div class="col-md-4">
+                <label class="form-label text-muted small mb-1">Rechercher</label>
+                <input type="text" name="q" value="{{ search }}" class="form-control" placeholder="Email ou nom d'utilisateur">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label text-muted small mb-1">Rôle</label>
+                <select name="role" class="form-select">
+                    <option value="">Tous les rôles</option>
+                    <option value="ROLE_USER" {{ currentRole == 'ROLE_USER' ? 'selected' : '' }}>Utilisateurs</option>
+                    <option value="ROLE_ARTIST" {{ currentRole == 'ROLE_ARTIST' ? 'selected' : '' }}>Artistes</option>
+                    <option value="ROLE_ADMIN" {{ currentRole == 'ROLE_ADMIN' ? 'selected' : '' }}>Administrateurs</option>
+                </select>
+            </div>
+            <div class="col-md-5 d-flex gap-2 mt-4 mt-md-0">
+                <button type="submit" class="btn btn-primary flex-grow-1">Appliquer</button>
+                <a href="{{ path('admin_users_list') }}" class="btn btn-outline-secondary">Réinitialiser</a>
+            </div>
         </form>
     </div>
 </div>
@@ -61,11 +75,20 @@
                             {% endif %}
                         </td>
                         <td>{{ user.createdAt|date('d/m/Y') }}</td>
-                        <td>
-                            <form action="{{ path('admin_users_toggle', {id: user.id}) }}" method="POST" style="display:inline">
+                        <td class="d-flex flex-wrap gap-2">
+                            <form action="{{ path('admin_users_toggle', {id: user.id}) }}" method="POST">
                                 <input type="hidden" name="_token" value="{{ csrf_token('toggle_user_' ~ user.id) }}">
                                 <button type="submit" class="btn btn-sm btn-{{ user.isActive ? 'warning' : 'success' }}">
                                     {{ user.isActive ? 'Suspendre' : 'Activer' }}
+                                </button>
+                            </form>
+                            <a href="{{ path('admin_users_edit', {id: user.id}) }}" class="btn btn-sm btn-outline-primary">
+                                Modifier
+                            </a>
+                            <form action="{{ path('admin_users_delete', {id: user.id}) }}" method="POST" onsubmit="return confirm('Supprimer cet utilisateur ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_user_' ~ user.id) }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    Supprimer
                                 </button>
                             </form>
                         </td>

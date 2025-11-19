@@ -43,9 +43,13 @@ try {
     $stmt = $pdo->prepare("SELECT COUNT(*) FROM user WHERE email = ?");
     $stmt->execute(['admin@musehub.com']);
     if ($stmt->fetchColumn() > 0) {
+        $updateRoles = $pdo->prepare("UPDATE user SET roles = ? WHERE email = ?");
+        $updateRoles->execute([json_encode(['ROLE_ADMIN', 'ROLE_ARTIST']), 'admin@musehub.com']);
+
         echo "✅ Admin user already exists!\n";
         echo "Email: admin@musehub.com\n";
         echo "Password: admin123\n";
+        echo "🔐 Roles refreshed to: ROLE_ADMIN, ROLE_ARTIST\n";
         exit(0);
     }
 
@@ -74,7 +78,7 @@ try {
         'admin@musehub.com',
         $hashedPassword,
         'admin',
-        json_encode(['ROLE_ADMIN']),
+        json_encode(['ROLE_ADMIN', 'ROLE_ARTIST']),
         1
     ]);
 
@@ -82,7 +86,7 @@ try {
     echo "📧 Email: admin@musehub.com\n";
     echo "🔑 Password: admin123\n";
     echo "👤 Username: admin\n";
-    echo "🔐 Role: ROLE_ADMIN\n\n";
+    echo "🔐 Roles: ROLE_ADMIN, ROLE_ARTIST\n\n";
     echo "🌐 Login at: http://localhost:8000/login\n";
 
 } catch (PDOException $e) {

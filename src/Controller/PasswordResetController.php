@@ -2,9 +2,7 @@
 
 namespace App\Controller;
 
-use App\Entity\User;
 use App\Repository\UserRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,6 +11,8 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use App\Service\PasswordResetManager;
 
 #[Route('/api/auth')]
 class PasswordResetController extends AbstractController
@@ -21,7 +21,8 @@ class PasswordResetController extends AbstractController
         private UserRepository $userRepository,
         private UserPasswordHasherInterface $passwordHasher,
         private MailerInterface $mailer,
-        private EntityManagerInterface $em
+        private PasswordResetManager $passwordResetManager,
+        private UrlGeneratorInterface $urlGenerator
     ) {
     }
 
@@ -41,14 +42,12 @@ class PasswordResetController extends AbstractController
             return new JsonResponse(['message' => 'If the email exists, a reset link has been sent'], Response::HTTP_OK);
         }
 
-        // Generate reset token (in production, store this in database with expiry)
-        $token = bin2hex(random_bytes(32));
-        
-        // In production, save token to database
-        // For now, we'll just send the email
-        
+        $token = $this->passwordResetManager->createToken($user);
+
         try {
-            $resetUrl = "https://musehub.com/reset-password?token={$token}";
+            $resetUrl = $this->urlGenerator->generate('password_reset_form', [
+                'token' => $token,
+            ], UrlGeneratorInterface::ABSOLUTE_URL);
             
             $email = (new Email())
                 ->from('noreply@musehub.com')
@@ -74,17 +73,17 @@ class PasswordResetController extends AbstractController
             return new JsonResponse(['error' => 'Token and password are required'], Response::HTTP_BAD_REQUEST);
         }
 
-        // In production, validate token from database
-        // For now, this is a simplified version
-        
-        $user = $this->userRepository->findOneByEmail($data['email'] ?? '');
-        
+        $user = $this->passwordResetManager->findUserForToken($data['token']);
         if (!$user) {
-            return new JsonResponse(['error' => 'Invalid token'], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['error' => 'Invalid or expired token'], Response::HTTP_BAD_REQUEST);
+        }
+
+        if (strlen((string)$data['password']) < 6) {
+            return new JsonResponse(['error' => 'Password must be at least 6 characters'], Response::HTTP_BAD_REQUEST);
         }
 
         $user->setPassword($this->passwordHasher->hashPassword($user, $data['password']));
-        $this->em->flush();
+        $this->passwordResetManager->clearToken($user);
 
         return new JsonResponse(['message' => 'Password reset successfully'], Response::HTTP_OK);
     }

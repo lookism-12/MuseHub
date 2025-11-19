@@ -33,12 +33,17 @@ class CommunityApiController extends AbstractController
         $limit = min(50, max(1, (int)$request->query->get('limit', 20)));
         $offset = ($page - 1) * $limit;
 
-        $posts = $this->postRepository->createQueryBuilder('p')
+        $qb = $this->postRepository->createQueryBuilder('p')
             ->orderBy('p.createdAt', 'DESC')
             ->setFirstResult($offset)
-            ->setMaxResults($limit)
+            ->setMaxResults($limit);
+
+        $total = (int)$this->postRepository->createQueryBuilder('p')
+            ->select('COUNT(p.id)')
             ->getQuery()
-            ->getResult();
+            ->getSingleScalarResult();
+
+        $posts = $qb->getQuery()->getResult();
 
         $data = array_map(function (Post $post) {
             return [
@@ -56,6 +61,8 @@ class CommunityApiController extends AbstractController
             'data' => $data,
             'page' => $page,
             'limit' => $limit,
+            'total' => $total,
+            'has_next' => $offset + $limit < $total,
         ]);
     }
 

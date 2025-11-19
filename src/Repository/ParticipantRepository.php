@@ -34,5 +34,14 @@ class ParticipantRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    public function findByParticipantUuid(string $participantUuid): array
+    {
+        return $this->createQueryBuilder('p')
+            ->where('p.participantUuid = :participantUuid')
+            ->setParameter('participantUuid', $participantUuid)
+            ->getQuery()
+            ->getResult();
+    }
 }
 

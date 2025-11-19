@@ -38,9 +38,19 @@
                     {% endif %}
                     <div class="mt-3">
                         {% if app.user %}
-                            <a href="#" class="btn btn-primary btn-sm">S'inscrire</a>
+                            {% set isRegistered = participationMap[event.uuid] is defined %}
+                            <form method="POST" action="{{ path(isRegistered ? 'web_events_unsubscribe' : 'web_events_subscribe', {id: event.id}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token((isRegistered ? 'unsubscribe_event_' : 'subscribe_event_') ~ event.id) }}">
+                                <button type="submit" class="btn btn-{{ isRegistered ? 'secondary' : 'primary' }} btn-sm w-100">
+                                    {% if isRegistered %}
+                                        <i class="fas fa-user-check me-1"></i>Se désinscrire
+                                    {% else %}
+                                        <i class="fas fa-user-plus me-1"></i>S'inscrire
+                                    {% endif %}
+                                </button>
+                            </form>
                         {% else %}
-                            <a href="{{ path('login') }}" class="btn btn-outline-primary btn-sm">Se connecter pour s'inscrire</a>
+                            <a href="{{ path('login') }}" class="btn btn-outline-primary btn-sm w-100">Se connecter pour s'inscrire</a>
                         {% endif %}
                     </div>
                 </div>

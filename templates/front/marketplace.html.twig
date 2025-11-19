@@ -51,7 +51,7 @@
 
     <div class="row g-4">
         {% for listing in listings %}
-        <div class="col-md-6 col-lg-4">
+        <div class="col-md-6 col-lg-4" id="listing-{{ listing.id }}">
             <div class="card h-100">
                 <div class="card-body">
                     <h5 class="card-title">Annonce #{{ listing.id }}</h5>
@@ -69,13 +69,16 @@
                     <p class="text-muted small">
                         <i class="fas fa-tag me-1"></i>Artwork UUID: {{ listing.artworkUuid|slice(0, 8) }}...
                     </p>
-                    <div class="mt-3">
+                    <div class="mt-3 d-grid gap-2">
+                        <a href="{{ path('marketplace_offer_show', {id: listing.id}) }}" class="btn btn-outline-secondary btn-sm">
+                            Consulter l'offre
+                        </a>
                         {% if listing.status == 'available' and app.user %}
-                            <a href="#" class="btn btn-primary btn-sm w-100">Acheter maintenant</a>
+                            <a href="#!" class="btn btn-primary btn-sm">Acheter maintenant</a>
                         {% elseif listing.status == 'available' %}
-                            <a href="{{ path('login') }}" class="btn btn-outline-primary btn-sm w-100">Se connecter pour acheter</a>
+                            <a href="{{ path('login') }}" class="btn btn-outline-primary btn-sm">Se connecter pour acheter</a>
                         {% else %}
-                            <button class="btn btn-secondary btn-sm w-100" disabled>Épuisé</button>
+                            <button class="btn btn-secondary btn-sm" disabled>Épuisé</button>
                         {% endif %}
                     </div>
                 </div>

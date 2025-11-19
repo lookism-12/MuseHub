@@ -31,14 +31,40 @@ class EventApiController extends AbstractController
     {
         $dateFrom = $request->query->get('date_from');
         $dateTo = $request->query->get('date_to');
+        $status = $request->query->get('status', 'upcoming');
+        $isActive = $request->query->has('active') ? filter_var($request->query->get('active'), FILTER_VALIDATE_BOOLEAN) : null;
+        $page = max(1, (int)$request->query->get('page', 1));
+        $limit = min(100, max(1, (int)$request->query->get('limit', 20)));
+        $offset = ($page - 1) * $limit;
 
-        if ($dateFrom && $dateTo) {
-            $start = new \DateTimeImmutable($dateFrom);
-            $end = new \DateTimeImmutable($dateTo);
-            $events = $this->eventRepository->findByDateRange($start, $end);
-        } else {
-            $events = $this->eventRepository->findUpcoming();
+        $qb = $this->eventRepository->createQueryBuilder('e');
+
+        if ($dateFrom) {
+            $qb->andWhere('e.dateTime >= :from')->setParameter('from', new \DateTimeImmutable($dateFrom));
         }
+        if ($dateTo) {
+            $qb->andWhere('e.dateTime <= :to')->setParameter('to', new \DateTimeImmutable($dateTo));
+        }
+
+        $now = new \DateTimeImmutable();
+        if ($status === 'upcoming') {
+            $qb->andWhere('e.dateTime >= :now')->setParameter('now', $now);
+        } elseif ($status === 'past') {
+            $qb->andWhere('e.dateTime < :now')->setParameter('now', $now);
+        }
+
+        if ($isActive !== null) {
+            $qb->andWhere('e.isActive = :active')->setParameter('active', $isActive);
+        }
+
+        $qb->orderBy('e.dateTime', $status === 'past' ? 'DESC' : 'ASC');
+
+        $total = (clone $qb)->select('COUNT(e.id)')->getQuery()->getSingleScalarResult();
+
+        $events = $qb->setFirstResult($offset)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
 
         $data = array_map(function (Event $event) {
             return [
@@ -49,10 +75,17 @@ class EventApiController extends AbstractController
                 'date_time' => $event->getDateTime()->format('Y-m-d H:i:s'),
                 'location' => $event->getLocation(),
                 'organiser_uuid' => $event->getOrganiserUuid(),
+                'is_active' => $event->isActive(),
+                'participants' => count($this->participantRepository->findByEventUuid($event->getUuid())),
             ];
         }, $events);
 
-        return new JsonResponse($data);
+        return new JsonResponse([
+            'data' => $data,
+            'page' => $page,
+            'limit' => $limit,
+            'total' => (int)$total,
+        ]);
     }
 
     #[Route('', name: 'api_events_create', methods: ['POST'])]

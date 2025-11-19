@@ -3,9 +3,44 @@
 {% block title %}Gestion Événements - MuseHub Admin{% endblock %}
 
 {% block body %}
-<div class="mb-4">
-    <h1 class="h3 mb-0">Gestion des Événements</h1>
-    <p class="text-muted">Gérer les événements artistiques</p>
+<div class="mb-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+    <div>
+        <h1 class="h3 mb-0">Gestion des Événements</h1>
+        <p class="text-muted mb-0">Gérer les événements artistiques</p>
+    </div>
+    <a href="{{ path('admin_events_new') }}" class="btn btn-primary">
+        <i class="fas fa-calendar-plus me-2"></i>Nouvel événement
+    </a>
+</div>
+
+<div class="card mb-4" style="border-radius: 15px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <div class="card-body">
+        <form method="GET" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label text-muted small mb-1">Rechercher</label>
+                <input type="text" name="q" class="form-control" value="{{ search }}" placeholder="Titre ou lieu">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label text-muted small mb-1">Statut</label>
+                <select name="status" class="form-select">
+                    {% set statuses = {
+                        'all': 'Tous',
+                        'upcoming': 'À venir',
+                        'past': 'Passés',
+                        'active': 'Actifs',
+                        'inactive': 'Inactifs'
+                    } %}
+                    {% for key, label in statuses %}
+                        <option value="{{ key }}" {{ statusFilter == key ? 'selected' : '' }}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-5 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">Appliquer</button>
+                <a href="{{ path('admin_events_list') }}" class="btn btn-outline-secondary">Réinitialiser</a>
+            </div>
+        </form>
+    </div>
 </div>
 
 <!-- Statistiques -->
@@ -49,7 +84,7 @@
                         <th>Lieu</th>
                         <th>Organisateur</th>
                         <th>Statut</th>
-                        <th>Actions</th>
+                        <th class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -72,9 +107,20 @@
                             {% endif %}
                         </td>
                         <td>
-                            <a href="{{ path('admin_events_participants', {id: event.id}) }}" class="btn btn-sm btn-primary">
-                                <i class="fas fa-users me-1"></i>Participants
-                            </a>
+                            <div class="d-flex flex-wrap gap-2 justify-content-end">
+                                <a href="{{ path('admin_events_participants', {id: event.id}) }}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-users me-1"></i>Participants
+                                </a>
+                                <a href="{{ path('admin_events_edit', {id: event.id}) }}" class="btn btn-sm btn-outline-secondary">
+                                    Modifier
+                                </a>
+                                <form action="{{ path('admin_events_delete', {id: event.id}) }}" method="POST" onsubmit="return confirm('Supprimer cet événement ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_event_' ~ event.id) }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        Supprimer
+                                    </button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                     {% else %}
