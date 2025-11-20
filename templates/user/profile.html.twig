@@ -1,0 +1,260 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Mon Profil - MuseHub{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .profile-hero {
+            background: radial-gradient(circle at top right, rgba(255,255,255,0.08), transparent 55%),
+                        linear-gradient(135deg, rgba(127, 0, 255, 0.92), rgba(255, 156, 182, 0.9));
+            color: #fff;
+            padding: 80px 0 40px;
+            position: relative;
+        }
+        .profile-hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.75) 100%);
+            z-index: 0;
+        }
+        .profile-hero .container {
+            position: relative;
+            z-index: 1;
+        }
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+        .profile-avatar {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            border: 8px solid rgba(255,255,255,0.3);
+            object-fit: cover;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.35);
+            background: rgba(255,255,255,0.15);
+        }
+        .profile-meta h1 {
+            font-size: 2.7rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+        .role-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 16px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(6px);
+            margin-right: 10px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        .stats-row {
+            display: flex;
+            gap: 25px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        .stats-card {
+            flex: 1;
+            min-width: 200px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 20px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .stats-card h3 {
+            font-size: 2.5rem;
+            margin: 0;
+            font-weight: 700;
+        }
+        .stats-card span {
+            display: block;
+            font-size: 0.95rem;
+            letter-spacing: 0.08em;
+            opacity: 0.8;
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+        .profile-content {
+            margin-top: -80px;
+            position: relative;
+            z-index: 2;
+        }
+        .glass-card {
+            border-radius: 24px;
+            padding: 35px;
+            background: rgba(255,255,255,0.9);
+            box-shadow: 0 25px 40px rgba(127,0,255,0.08);
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+        .timeline-card {
+            border-left: 4px solid var(--primary-color);
+        }
+        .bio-text {
+            font-size: 1.1rem;
+            color: #4b5563;
+            line-height: 1.8;
+            white-space: pre-line;
+        }
+        .info-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .info-list li {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f2f2f2;
+            color: #555;
+        }
+        .info-list li i {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(127,0,255,0.08);
+            color: var(--primary-color);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+        .form-card {
+            border-radius: 24px;
+            padding: 30px;
+            background: #fff;
+            box-shadow: 0 25px 40px rgba(0,0,0,0.05);
+        }
+        .form-card .btn-primary {
+            width: 100%;
+            border-radius: 999px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            padding: 14px;
+        }
+        .upload-hint {
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+        @media (max-width: 768px) {
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            .stats-row {
+                flex-direction: column;
+            }
+            .profile-content {
+                margin-top: -40px;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    {% set avatarPath = user.avatarUrl ? (user.avatarUrl starts with 'http' ? user.avatarUrl : asset(user.avatarUrl)) : asset('assets/logo.png') %}
+
+    <section class="profile-hero">
+        <div class="container">
+            <div class="profile-header">
+                <img src="{{ avatarPath }}" alt="Photo de {{ user.username ?: user.email }}" class="profile-avatar">
+                <div class="profile-meta">
+                    <div class="mb-2">
+                        {% for role in user.roles %}
+                            <span class="role-chip"><i class="fas fa-certificate me-2"></i>{{ role|replace({'ROLE_': ''})|title }}</span>
+                        {% endfor %}
+                    </div>
+                    <h1>{{ user.username ?: user.email }}</h1>
+                    <p class="mb-3 text-white-50"><i class="fas fa-calendar-alt me-2"></i>Membre depuis {{ user.createdAt ? user.createdAt|date('F Y') : 'peu' }}</p>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="mailto:{{ user.email }}" class="btn btn-light btn-sm rounded-pill px-4"><i class="fas fa-envelope me-2"></i>Contacter</a>
+                        <a href="#" class="btn btn-outline-light btn-sm rounded-pill px-4 disabled"><i class="fas fa-user-plus me-2"></i>Connecter bientôt</a>
+                    </div>
+                </div>
+            </div>
+            <div class="stats-row">
+                <div class="stats-card">
+                    <h3>{{ stats.artworks }}</h3>
+                    <span>Œuvres publiées</span>
+                </div>
+                <div class="stats-card">
+                    <h3>{{ stats.posts }}</h3>
+                    <span>Posts & moments</span>
+                </div>
+                <div class="stats-card">
+                    <h3>{{ stats.interactions }}</h3>
+                    <span>Interactions</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="container profile-content">
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="glass-card mb-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h4 class="mb-0"><i class="fas fa-id-card me-2 text-primary"></i>À propos</h4>
+                        <span class="badge bg-light text-dark"><i class="fas fa-globe-europe me-1"></i>Profil public</span>
+                    </div>
+                    <p class="bio-text">
+                        {% if user.bio %}
+                            {{ user.bio }}
+                        {% else %}
+                            Partagez votre parcours, vos inspirations et vos collaborations pour inspirer la communauté MuseHub.
+                        {% endif %}
+                    </p>
+                    <ul class="info-list mt-4">
+                        <li><i class="fas fa-user"></i>Identifiant : {{ user.uuid }}</li>
+                        <li><i class="fas fa-envelope-open-text"></i>{{ user.email }}</li>
+                        <li><i class="fas fa-shield-alt"></i>Status : {{ user.isActive ? 'Compte actif' : 'Compte inactif' }}</li>
+                    </ul>
+                </div>
+
+                <div class="glass-card timeline-card">
+                    <div class="d-flex align-items-center mb-4">
+                        <h4 class="mb-0"><i class="fas fa-stream me-2 text-primary"></i>Instantanés</h4>
+                        <span class="badge bg-primary ms-3">Bientôt enrichi</span>
+                    </div>
+                    <p class="text-muted mb-0">Vos futures publications, expositions et collaborations apparaîtront ici automatiquement. Continuez à créer pour nourrir votre histoire sur MuseHub.</p>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="form-card">
+                    <h5 class="mb-1">Personnaliser mon profil</h5>
+                    <p class="text-muted mb-4">Actualisez votre bio, votre nom d’affichage et votre photo comme sur un profil Facebook professionnel.</p>
+
+                    {{ form_start(form) }}
+                        <div class="mb-3">
+                            {{ form_label(form.username) }}
+                            {{ form_widget(form.username) }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form_label(form.bio) }}
+                            {{ form_widget(form.bio) }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form_label(form.avatar) }}
+                            {{ form_widget(form.avatar) }}
+                            <div class="upload-hint mt-2">
+                                <i class="fas fa-info-circle me-1"></i>JPG, PNG, GIF ou WEBP – 5 Mo max.
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Enregistrer les modifications
+                        </button>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
