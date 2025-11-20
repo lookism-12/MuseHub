@@ -1,0 +1,81 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}
+    {{ action == 'new' ? 'Nouvel utilisateur' : 'Modifier utilisateur' }} - MuseHub Admin
+{% endblock %}
+
+{% block body %}
+<div class="mb-4 d-flex align-items-center gap-3">
+    <a href="{{ path('admin_users_list') }}" class="btn btn-link text-decoration-none">
+        <i class="fas fa-arrow-left me-2"></i>Retour
+    </a>
+    <div>
+        <h1 class="h3 mb-0">
+            {{ action == 'new' ? 'Créer un utilisateur' : 'Modifier un utilisateur' }}
+        </h1>
+        <p class="text-muted mb-0">Définir les accès et le statut</p>
+    </div>
+</div>
+
+{% set formAction = action == 'new'
+    ? path('admin_users_new')
+    : path('admin_users_edit', {id: user.id})
+%}
+{% set csrfIntention = action == 'new'
+    ? 'create_user'
+    : 'edit_user_' ~ user.id
+%}
+
+<div class="card" style="border-radius: 15px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <div class="card-body">
+        <form method="POST" action="{{ formAction }}">
+            <input type="hidden" name="_token" value="{{ csrf_token(csrfIntention) }}">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <label class="form-label">Email *</label>
+                    <input type="email" name="email" value="{{ user.email }}" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Nom d'utilisateur</label>
+                    <input type="text" name="username" value="{{ user.username }}" class="form-control" placeholder="Optionnel">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">
+                        Mot de passe {{ action == 'edit' ? '(laisser vide pour conserver)' : '*' }}
+                    </label>
+                    <input type="password" name="password" class="form-control" {{ action == 'new' ? 'required' : '' }}>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Statut</label>
+                    <div class="form-check form-switch mt-2">
+                        <input class="form-check-input" type="checkbox" role="switch" id="isActiveSwitch" name="is_active" value="1" {{ user.isActive ? 'checked' : '' }}>
+                        <label class="form-check-label" for="isActiveSwitch">Compte actif</label>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label d-block">Rôles</label>
+                    <div class="d-flex flex-wrap gap-3">
+                        {% for role in roleOptions %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="role_{{ loop.index }}" name="roles[]" value="{{ role }}" {{ role in user.roles ? 'checked' : '' }}>
+                                <label class="form-check-label" for="role_{{ loop.index }}">{{ role }}</label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <small class="text-muted d-block mt-2">
+                        ROLE_USER est attribué automatiquement s'il n'est pas sélectionné.
+                    </small>
+                </div>
+            </div>
+            <div class="d-flex justify-content-end gap-3 mt-4">
+                <a href="{{ path('admin_users_list') }}" class="btn btn-outline-secondary">Annuler</a>
+                <button type="submit" class="btn btn-primary">
+                    {{ action == 'new' ? 'Créer' : 'Mettre à jour' }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+

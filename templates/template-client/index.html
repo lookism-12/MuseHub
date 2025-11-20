@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MUSEHUB-MASTER : plateforme collaborative pour artistes, galeries et amateurs d'art">
+    <meta name="keywords" content="art, artistes, galeries, marketplace, événements, communauté">
+    <title>MUSEHUB-MASTER — Plateforme artistique</title>
+    <!-- Favicon -->
+    <link rel="icon" href="/BO/assets/images/logo/logomuse.png" type="image/png">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../FO/assets/css/style.css">
+</head>
+<body class="video-background-body">
+    <!-- Full Page Video Background -->
+    <video class="full-page-video" autoplay muted loop playsinline>
+        <source src="/FO/assets/videos/stars.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    <div class="video-overlay"></div>
+    
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top transparent-nav">
+        <div class="container">
+            <a class="navbar-brand fw-bold d-flex align-items-center" href="index.html">
+                <img src="/BO/assets/images/logo/logomuse.png" alt="MUSEHUB-MASTER Logo" style="height: 60px; margin-right: 15px;">
+                <span>MUSEHUB-MASTER</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="index.html">Accueil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="artworks.html">Œuvres</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="artists.html">Artistes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="events.html">Événements</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="marketplace.html">Marketplace</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="community.html">Communauté</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="login.html"><i class="fas fa-sign-in-alt"></i> Connexion</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-primary text-white ms-2 px-3" href="register.html">S'inscrire</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section text-white py-5 position-relative">
+        <div class="container py-5 position-relative" style="z-index: 2;">
+            <div class="row align-items-center">
+                <div class="col-lg-12 text-center">
+                    <h1 class="display-4 fw-bold mb-4 hero-title">Bienvenue sur MUSEHUB-MASTER</h1>
+                    <p class="lead mb-4">“Uniting Artists, Galleries & Art Lovers.”</p>
+                    <div class="d-flex gap-3 justify-content-center">
+                        <a href="register.html" class="btn btn-light btn-lg">Rejoindre la communauté</a>
+                        <a href="artworks.html" class="btn btn-outline-light btn-lg">Découvrir les œuvres</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section py-5 transparent-section">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-5 fw-bold mb-3">Que pouvez-vous faire ?</h2>
+                <p class="lead text-muted">Trois façons de participer à la communauté artistique</p>
+            </div>
+            
+            <div class="row g-4">
+                <!-- Artiste -->
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm hover-card">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 80px; height: 80px;">
+                                <i class="fas fa-paint-brush fa-2x"></i>
+                            </div>
+                            <h3 class="h4 mb-3">Artiste</h3>
+                            <p class="text-muted mb-4">Publiez vos créations, construisez votre portfolio et vendez vos œuvres directement aux amateurs d'art.</p>
+                            <ul class="list-unstyled text-start">
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Publier des œuvres</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Portfolio personnalisé</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Vendre en ligne</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Organiser des événements</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Utilisateur -->
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm hover-card">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 80px; height: 80px;">
+                                <i class="fas fa-user fa-2x"></i>
+                            </div>
+                            <h3 class="h4 mb-3">Utilisateur / Amateur</h3>
+                            <p class="text-muted mb-4">Découvrez, suivez vos artistes préférés, commentez et achetez des œuvres uniques.</p>
+                            <ul class="list-unstyled text-start">
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Suivre des artistes</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Aimer et commenter</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Acheter des œuvres</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Participer aux événements</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Galerie -->
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm hover-card">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 80px; height: 80px;">
+                                <i class="fas fa-building fa-2x"></i>
+                            </div>
+                            <h3 class="h4 mb-3">Galerie</h3>
+                            <p class="text-muted mb-4">Exposez les œuvres d'artistes talentueux et organisez des expositions virtuelles ou physiques.</p>
+                            <ul class="list-unstyled text-start">
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Exposer des artistes</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Créer des collections</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Organiser des expositions</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Vendre en ligne</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Latest Artworks Section -->
+    <section class="artworks-section py-5 transparent-section">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="display-6 fw-bold mb-0">Dernières œuvres</h2>
+                <a href="artworks.html" class="btn btn-outline-primary">Voir tout <i class="fas fa-arrow-right ms-2"></i></a>
+            </div>
+            
+            <div class="row g-4">
+                <!-- Artwork Card 1 -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="card artwork-card h-100 border-0 shadow-sm">
+                        <div class="card-img-top" style="height: 250px; overflow: hidden;">
+                            <img src="/FO/assets/images/artwork-1.png" alt="Artwork 1" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">Titre de l'œuvre</h5>
+                            <p class="text-muted small mb-2">Par <a href="#" class="text-decoration-none">Nom Artiste</a></p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-primary fw-bold">250 €</span>
+                                <div>
+                                    <i class="fas fa-heart text-danger"></i>
+                                    <span class="small ms-1">42</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Artwork Card 2 -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="card artwork-card h-100 border-0 shadow-sm">
+                        <div class="card-img-top" style="height: 250px; overflow: hidden;">
+                            <img src="/FO/assets/images/artwork-2.png" alt="Artwork 2" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">Titre de l'œuvre</h5>
+                            <p class="text-muted small mb-2">Par <a href="#" class="text-decoration-none">Nom Artiste</a></p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-primary fw-bold">180 €</span>
+                                <div>
+                                    <i class="fas fa-heart text-danger"></i>
+                                    <span class="small ms-1">28</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Artwork Card 3 -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="card artwork-card h-100 border-0 shadow-sm">
+                        <div class="card-img-top" style="height: 250px; overflow: hidden;">
+                            <img src="/FO/assets/images/artwork-3.png" alt="Artwork 3" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">Titre de l'œuvre</h5>
+                            <p class="text-muted small mb-2">Par <a href="#" class="text-decoration-none">Nom Artiste</a></p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-primary fw-bold">320 €</span>
+                                <div>
+                                    <i class="fas fa-heart text-danger"></i>
+                                    <span class="small ms-1">56</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Artwork Card 4 -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="card artwork-card h-100 border-0 shadow-sm">
+                        <div class="card-img-top" style="height: 250px; overflow: hidden;">
+                            <img src="/FO/assets/images/artwork-4.png" alt="Artwork 4" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">Titre de l'œuvre</h5>
+                            <p class="text-muted small mb-2">Par <a href="#" class="text-decoration-none">Nom Artiste</a></p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-primary fw-bold">450 €</span>
+                                <div>
+                                    <i class="fas fa-heart text-danger"></i>
+                                    <span class="small ms-1">89</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Upcoming Events Section -->
+    <section class="events-section py-5 transparent-section">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="display-6 fw-bold mb-0">Événements à venir</h2>
+                <a href="events.html" class="btn btn-outline-primary">Voir tout <i class="fas fa-arrow-right ms-2"></i></a>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0 me-3 text-center">
+                                    <div class="bg-primary text-white rounded p-3">
+                                        <div class="h3 mb-0">15</div>
+                                        <div class="small">DÉC</div>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h5 class="card-title">Exposition d'art contemporain</h5>
+                                    <p class="text-muted mb-2"><i class="fas fa-map-marker-alt me-2"></i>Galerie d'Art Moderne, Paris</p>
+                                    <p class="small mb-0">Découvrez les nouvelles créations de 15 artistes émergents.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0 me-3 text-center">
+                                    <div class="bg-success text-white rounded p-3">
+                                        <div class="h3 mb-0">22</div>
+                                        <div class="small">DÉC</div>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h5 class="card-title">Atelier de peinture en ligne</h5>
+                                    <p class="text-muted mb-2"><i class="fas fa-laptop me-2"></i>En ligne (Zoom)</p>
+                                    <p class="small mb-0">Apprenez les techniques de peinture à l'huile avec un artiste professionnel.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section text-white py-5 transparent-section">
+        <div class="container text-center py-5">
+            <h2 class="display-5 fw-bold mb-4">Prêt à partager votre art ?</h2>
+            <p class="lead mb-4">Rejoignez des milliers d'artistes et amateurs d'art sur MUSEHUB-MASTER</p>
+            <a href="register.html" class="btn btn-primary btn-lg px-5">Créer un compte gratuitement</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer py-4 transparent-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <img src="/BO/assets/images/logo/logomuse.png" alt="MUSEHUB-MASTER Logo" style="height: 70px; margin-bottom: 15px;">
+                    <h5 class="fw-bold mb-3">MUSEHUB-MASTER</h5>
+                    <p class="text-muted">Plateforme collaborative pour artistes, galeries et amateurs d'art.</p>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <h6 class="fw-bold mb-3">Liens rapides</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-muted">À propos</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Contact</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-muted">CGU</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Politique de confidentialité</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <h6 class="fw-bold mb-3">Suivez-nous</h6>
+                    <div class="d-flex gap-3">
+                        <a href="#" class="text-decoration-none text-muted"><i class="fab fa-facebook fa-2x"></i></a>
+                        <a href="#" class="text-decoration-none text-muted"><i class="fab fa-instagram fa-2x"></i></a>
+                        <a href="#" class="text-decoration-none text-muted"><i class="fab fa-twitter fa-2x"></i></a>
+                        <a href="#" class="text-decoration-none text-muted"><i class="fab fa-pinterest fa-2x"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="text-center text-muted">
+                <p class="mb-0">&copy; 2025 MUSEHUB-MASTER. Tous droits réservés.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="../FO/assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Catégories d'œuvres - MuseHub Admin{% endblock %}
+
+{% block body %}
+<div class="mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="h3 mb-0">
+                <i class="fas fa-tags me-2"></i>Gestion des Catégories
+            </h1>
+            <p class="text-muted">Gérer les catégories d'œuvres d'art</p>
+        </div>
+        <a href="{{ path('admin_category_new') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Nouvelle catégorie
+        </a>
+    </div>
+</div>
+
+<div class="card" style="border-radius: 15px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nom</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in categories %}
+                    <tr>
+                        <td>{{ category.id }}</td>
+                        <td>
+                            <strong>
+                                <i class="fas fa-tag me-2 text-primary"></i>{{ category.name }}
+                            </strong>
+                        </td>
+                        <td>
+                            {% if category.description %}
+                                {{ category.description|slice(0, 100) }}{% if category.description|length > 100 %}...{% endif %}
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ path('admin_category_edit', {id: category.id}) }}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-edit me-1"></i>Modifier
+                            </a>
+                            <form action="{{ path('admin_category_delete', {id: category.id}) }}" method="POST" style="display:inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_category_' ~ category.id) }}">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Supprimer cette catégorie ?');">
+                                    <i class="fas fa-trash me-1"></i>Supprimer
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center py-4">
+                            <i class="fas fa-tags fa-2x text-muted mb-2"></i>
+                            <p class="text-muted">Aucune catégorie trouvée</p>
+                            <a href="{{ path('admin_category_new') }}" class="btn btn-primary mt-2">
+                                <i class="fas fa-plus me-2"></i>Créer la première catégorie
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

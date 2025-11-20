@@ -1,0 +1,58 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}
+    {{ action == 'new' ? 'Nouveau post' : 'Modifier post' }} - Communauté
+{% endblock %}
+
+{% block body %}
+<div class="mb-4 d-flex align-items-center gap-3">
+    <a href="{{ path('admin_community_list') }}" class="btn btn-link text-decoration-none">
+        <i class="fas fa-arrow-left me-2"></i>Retour
+    </a>
+    <div>
+        <h1 class="h3 mb-0">
+            {{ action == 'new' ? 'Créer un post' : 'Modifier un post' }}
+        </h1>
+        <p class="text-muted mb-0">Publier des annonces officielles ou corriger le contenu</p>
+    </div>
+</div>
+
+{% set formAction = action == 'new'
+    ? path('admin_community_post_new')
+    : path('admin_community_post_edit', {id: post.id})
+%}
+{% set csrfIntention = action == 'new'
+    ? 'create_admin_post'
+    : 'edit_admin_post_' ~ post.id
+%}
+
+<div class="card" style="border-radius: 15px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <div class="card-body">
+        <form method="POST" action="{{ formAction }}">
+            <input type="hidden" name="_token" value="{{ csrf_token(csrfIntention) }}">
+            <div class="mb-3">
+                <label class="form-label">UUID Auteur</label>
+                {% set defaultAuthor = post.authorUuid is not null ? post.authorUuid : (app.user ? app.user.uuid : '') %}
+                <input type="text" name="author_uuid" class="form-control" value="{{ defaultAuthor }}">
+                <small class="text-muted">Utilisez votre UUID admin ou celui du créateur du post.</small>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Contenu *</label>
+                <textarea name="content" rows="5" class="form-control" required>{{ post.content }}</textarea>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Image (URL)</label>
+                <input type="url" name="image_url" class="form-control" value="{{ post.imageUrl }}">
+            </div>
+            <div class="d-flex justify-content-end gap-3">
+                <a href="{{ path('admin_community_list') }}" class="btn btn-outline-secondary">Annuler</a>
+                <button type="submit" class="btn btn-primary">
+                    {{ action == 'new' ? 'Publier' : 'Mettre à jour' }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+

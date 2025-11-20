@@ -1,0 +1,68 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Offre #{{ listing.id }} - Marketplace{% endblock %}
+
+{% block body %}
+<div class="container my-5">
+    <a href="{{ path('marketplace') }}" class="btn btn-link mb-4">
+        <i class="fas fa-arrow-left me-2"></i>Retour à la marketplace
+    </a>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card h-100">
+                <div class="card-body">
+                    <span class="badge bg-secondary mb-3">Offre #{{ listing.id }}</span>
+                    <h1 class="h3 mb-3">Détails de l'offre</h1>
+                    <p class="text-muted mb-4">
+                        UUID œuvre : <code>{{ listing.artworkUuid }}</code><br>
+                        Publiée le {{ listing.createdAt|date('d/m/Y à H:i') }}
+                    </p>
+                    <div class="d-flex align-items-baseline gap-3 mb-3">
+                        <span class="display-5 text-primary fw-bold">{{ listing.price }} €</span>
+                        {% set badge = listing.status == 'available' ? 'success' : (listing.status == 'paused' ? 'warning' : 'danger') %}
+                        <span class="badge bg-{{ badge }}">
+                            {{ listing.status == 'available' ? 'Disponible' : (listing.status == 'paused' ? 'En pause' : 'Épuisé') }}
+                        </span>
+                    </div>
+                    <p class="lead">
+                        {% if listing.stock > 0 %}
+                            <strong>{{ listing.stock }}</strong> pièce(s) restantes.
+                        {% else %}
+                            Stock non communiqué.
+                        {% endif %}
+                    </p>
+                    <p class="text-muted">
+                        Cette page vous permet de consulter toutes les informations publiques de l'offre.
+                        Pour finaliser l'achat, utilisez le bouton ci-dessous; si vous n'êtes pas connecté, vous serez redirigé vers la page de connexion.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Passer commande</h5>
+                    {% if listing.status != 'available' %}
+                        <div class="alert alert-warning">
+                            Cette offre n'est pas disponible pour le moment.
+                        </div>
+                    {% elseif app.user %}
+                        <p class="text-muted">Connecté en tant que {{ app.user.email }}</p>
+                        <a href="{{ path('marketplace') }}#listing-{{ listing.id }}" class="btn btn-primary w-100">
+                            <i class="fas fa-shopping-cart me-2"></i>Commander depuis la liste
+                        </a>
+                    {% else %}
+                        <p class="text-muted">Connectez-vous pour acheter cette œuvre.</p>
+                        <a href="{{ path('login') }}" class="btn btn-outline-primary w-100">
+                            Se connecter
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

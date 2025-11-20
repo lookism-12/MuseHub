@@ -1,0 +1,95 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Modération Communauté - MuseHub Admin{% endblock %}
+
+{% block body %}
+<div class="mb-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+    <div>
+        <h1 class="h3 mb-0">Modération Communauté</h1>
+        <p class="text-muted mb-0">Gérer les posts et commentaires</p>
+    </div>
+    <a href="{{ path('admin_community_post_new') }}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Nouveau post
+    </a>
+</div>
+
+<!-- Statistiques -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card" style="border-radius: 15px; border-left: 4px solid #3b82f6;">
+            <div class="card-body">
+                <h3 class="text-primary">{{ stats.total_posts }}</h3>
+                <p class="text-muted mb-0">Total posts</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card" style="border-radius: 15px; border-left: 4px solid #10b981;">
+            <div class="card-body">
+                <h3 class="text-success">{{ stats.total_comments }}</h3>
+                <p class="text-muted mb-0">Total commentaires</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Liste des posts -->
+<div class="card" style="border-radius: 15px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="fas fa-comments me-2"></i>Posts</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Auteur</th>
+                        <th>Contenu</th>
+                        <th>Likes</th>
+                        <th>Date</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for post in posts %}
+                    <tr>
+                        <td>{{ post.id }}</td>
+                        <td><code>{{ post.authorUuid|slice(0, 8) }}...</code></td>
+                        <td>{{ post.content|slice(0, 50) }}{% if post.content|length > 50 %}...{% endif %}</td>
+                        <td>
+                            <span class="badge bg-danger">
+                                <i class="fas fa-heart me-1"></i>{{ post.likesCount }}
+                            </span>
+                        </td>
+                        <td>{{ post.createdAt|date('d/m/Y H:i') }}</td>
+                        <td>
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="{{ path('admin_community_post_edit', {id: post.id}) }}" class="btn btn-sm btn-outline-secondary">
+                                    Modifier
+                                </a>
+                                <form action="{{ path('admin_community_post_delete', {id: post.id}) }}" method="POST" onsubmit="return confirm('Supprimer ce post ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_post_' ~ post.id) }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        Supprimer
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <i class="fas fa-comments fa-2x text-muted mb-2"></i>
+                            <p class="text-muted">Aucun post</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

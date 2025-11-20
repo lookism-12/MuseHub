@@ -1,0 +1,331 @@
+/* Admin Fancy Animations and Enhanced Styling */
+
+/* Larger Sidebar Logo */
+.page-sidebar .logo-wrapper img {
+  width: 220px !important;
+  height: auto !important;
+  max-width: 220px !important;
+  transition: all 0.3s ease;
+}
+
+.page-sidebar .logo-wrapper img:hover {
+  transform: scale(1.05);
+}
+
+/* Modern Sidebar with Glassmorphism */
+.page-sidebar {
+  background: linear-gradient(135deg, rgba(123, 44, 191, 0.95) 0%, rgba(157, 78, 221, 0.95) 100%) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 4px 0 30px rgba(123, 44, 191, 0.3);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Sidebar Logo Wrapper Enhancement */
+.page-sidebar .logo-wrapper {
+  background: rgba(255, 255, 255, 0.1) !important;
+  padding: 25px 20px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.page-sidebar .logo-wrapper:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Animated Sidebar Menu Items */
+.sidebar-menu .sidebar-list {
+  transition: all 0.3s ease;
+  margin: 5px 0;
+}
+
+.sidebar-menu .sidebar-list:hover {
+  transform: translateX(5px);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.sidebar-menu .sidebar-link {
+  transition: all 0.3s ease;
+  padding: 12px 20px;
+  border-radius: 8px;
+}
+
+.sidebar-menu .sidebar-link:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff !important;
+}
+
+/* Modern Header with Glassmorphism */
+.page-header {
+  background: rgba(255, 255, 255, 0.98) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 4px 30px rgba(123, 44, 191, 0.15);
+  border-bottom: 1px solid rgba(123, 44, 191, 0.1);
+  transition: all 0.3s ease;
+}
+
+/* Animated Cards */
+.page-body .card {
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 1px solid rgba(123, 44, 191, 0.1);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.page-body .card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 15px 40px rgba(123, 44, 191, 0.2);
+  border-color: rgba(123, 44, 191, 0.3);
+}
+
+/* Fade In Up Animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Staggered Animation for Cards */
+.page-body .card:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.page-body .card:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.page-body .card:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.page-body .card:nth-child(4) {
+  animation-delay: 0.4s;
+}
+
+.page-body .card:nth-child(5) {
+  animation-delay: 0.5s;
+}
+
+.page-body .card:nth-child(6) {
+  animation-delay: 0.6s;
+}
+
+/* Modern Buttons with Hover Effects */
+.btn {
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.btn:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #7B2CBF 0%, #9D4EDD 100%) !important;
+  border: none !important;
+  box-shadow: 0 4px 15px rgba(123, 44, 191, 0.4);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #6A1FA8 0%, #8B3DCC 100%) !important;
+  box-shadow: 0 8px 25px rgba(123, 44, 191, 0.5);
+  transform: translateY(-2px);
+}
+
+/* Animated Icons */
+.page-body i,
+.page-body svg {
+  transition: all 0.3s ease;
+}
+
+.page-body .card:hover i,
+.page-body .card:hover svg {
+  transform: scale(1.2) rotate(5deg);
+  color: #7B2CBF;
+}
+
+/* Modern Search Bar */
+.form-group-header input,
+.demo-input {
+  transition: all 0.3s ease;
+  border-radius: 25px;
+  padding: 10px 20px;
+}
+
+.form-group-header input:focus,
+.demo-input:focus {
+  transform: scale(1.05);
+  box-shadow: 0 5px 20px rgba(123, 44, 191, 0.2);
+  border-color: #7B2CBF;
+}
+
+/* Pulse Animation for Active Elements */
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+}
+
+.page-sidebar .sidebar-list.active {
+  animation: pulse 2s infinite;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Smooth Page Transitions */
+.page-body-wrapper {
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Modern Badges */
+.badge {
+  animation: bounceIn 0.5s ease;
+  background: linear-gradient(135deg, #7B2CBF, #9D4EDD) !important;
+  box-shadow: 0 2px 10px rgba(123, 44, 191, 0.3);
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Hover Effects for Tables */
+.table tbody tr {
+  transition: all 0.3s ease;
+}
+
+.table tbody tr:hover {
+  background: rgba(123, 44, 191, 0.05);
+  transform: scale(1.01);
+}
+
+/* Modern Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(123, 44, 191, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #7B2CBF, #9D4EDD);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #6A1FA8, #8B3DCC);
+}
+
+/* Loading Animation Enhancement */
+.loader-wrapper {
+  background: rgba(123, 44, 191, 0.95);
+  backdrop-filter: blur(10px);
+}
+
+.loader span {
+  background: #fff;
+  animation: loaderPulse 1.4s infinite ease-in-out;
+}
+
+@keyframes loaderPulse {
+  0%, 80%, 100% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Responsive Logo Adjustments */
+@media (max-width: 1199.98px) {
+  .page-sidebar .logo-wrapper img {
+    width: 180px !important;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .page-sidebar .logo-wrapper img {
+    width: 160px !important;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .page-sidebar .logo-wrapper img {
+    width: 140px !important;
+  }
+}
+
+/* Smooth Sidebar Transitions */
+.page-sidebar {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced Welcome Banner */
+.welcome-banner {
+  background: linear-gradient(135deg, rgba(123, 44, 191, 0.1) 0%, rgba(157, 78, 221, 0.1) 100%) !important;
+  border: 2px solid rgba(123, 44, 191, 0.2) !important;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.welcome-banner:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(123, 44, 191, 0.2);
+}
+
+/* Floating Action Elements */
+.tap-top {
+  background: linear-gradient(135deg, #7B2CBF, #9D4EDD) !important;
+  box-shadow: 0 4px 15px rgba(123, 44, 191, 0.4);
+  transition: all 0.3s ease;
+}
+
+.tap-top:hover {
+  transform: translateY(-5px) scale(1.1);
+  box-shadow: 0 8px 25px rgba(123, 44, 191, 0.5);
+}
+

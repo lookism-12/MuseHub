@@ -1,0 +1,82 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}
+    {{ action == 'new' ? 'Nouvel événement' : 'Modifier événement' }} - MuseHub Admin
+{% endblock %}
+
+{% block body %}
+<div class="mb-4 d-flex align-items-center gap-3">
+    <a href="{{ path('admin_events_list') }}" class="btn btn-link text-decoration-none">
+        <i class="fas fa-arrow-left me-2"></i>Retour
+    </a>
+    <div>
+        <h1 class="h3 mb-0">
+            {{ action == 'new' ? 'Créer un événement' : 'Modifier un événement' }}
+        </h1>
+        <p class="text-muted mb-0">Planifier et publier les événements de MuseHub</p>
+    </div>
+</div>
+
+{% set formAction = action == 'new'
+    ? path('admin_events_new')
+    : path('admin_events_edit', {id: event.id})
+%}
+{% set csrfIntention = action == 'new'
+    ? 'create_event'
+    : 'edit_event_' ~ event.id
+%}
+
+<div class="card" style="border-radius: 15px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <div class="card-body">
+        <form method="POST" action="{{ formAction }}">
+            <input type="hidden" name="_token" value="{{ csrf_token(csrfIntention) }}">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <label class="form-label">Titre *</label>
+                    <input type="text" name="title" class="form-control" value="{{ event.title }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Date & heure *</label>
+                    <input type="datetime-local" name="date_time"
+                        class="form-control"
+                        value="{{ event.dateTime ? event.dateTime|date('Y-m-d\\TH:i') : '' }}"
+                        required>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Description</label>
+                    <textarea name="description" rows="4" class="form-control">{{ event.description }}</textarea>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Lieu</label>
+                    <select name="location" class="form-select">
+                        <option value="online" {{ event.location == 'online' ? 'selected' : '' }}>En ligne</option>
+                        <option value="offline" {{ event.location == 'offline' ? 'selected' : '' }}>Présentiel</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Organisateur (UUID)</label>
+                    {% set defaultOrganiser = event.organiserUuid is not null ? event.organiserUuid : (app.user ? app.user.uuid : '') %}
+                    <input type="text" name="organiser_uuid" class="form-control"
+                        value="{{ defaultOrganiser }}">
+                    <small class="text-muted">Par défaut : votre UUID admin.</small>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Statut</label>
+                    <div class="form-check form-switch mt-2">
+                        <input class="form-check-input" type="checkbox" role="switch" id="isActiveEvent" name="is_active" value="1" {{ event.isActive ?? true ? 'checked' : '' }}>
+                        <label class="form-check-label" for="isActiveEvent">Événement actif</label>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex justify-content-end gap-3 mt-4">
+                <a href="{{ path('admin_events_list') }}" class="btn btn-outline-secondary">Annuler</a>
+                <button type="submit" class="btn btn-primary">
+                    {{ action == 'new' ? 'Créer' : 'Mettre à jour' }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+

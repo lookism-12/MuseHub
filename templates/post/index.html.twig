@@ -1,0 +1,33 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des posts{% endblock %}
+
+{% block body %}
+<h1>Posts</h1>
+
+<form method="post">
+    <input type="text" name="author_uuid" placeholder="UUID auteur" required>
+    <br>
+    <textarea name="content" placeholder="Ton post ici..." required></textarea>
+    <br>
+    <input type="text" name="image_url" placeholder="URL image (optionnel)">
+    <br>
+    <button type="submit">Publier</button>
+</form>
+
+<hr>
+
+{% for post in posts %}
+    <article style="border:1px solid #ccc; padding:10px; margin-bottom:10px;">
+        <p><strong>Auteur :</strong> {{ post.authorUuid }}</p>
+        <p>{{ post.content|nl2br }}</p>
+        {% if post.imageUrl %}
+            <img src="{{ post.imageUrl }}" style="max-width:300px;">
+        {% endif %}
+        <p><small>Publié le {{ post.createdAt|date('d/m/Y H:i') }}</small></p>
+        <a href="{{ path('post_show', {id: post.id}) }}">Voir détails</a>
+    </article>
+{% else %}
+    <p>Aucun post pour le moment.</p>
+{% endfor %}
+{% endblock %}

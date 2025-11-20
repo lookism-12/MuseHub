@@ -1,0 +1,184 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Dashboard - MuseHub Admin{% endblock %}
+
+{% block body %}
+<div class="mb-4">
+    <h1 class="h3 mb-0">Tableau de bord</h1>
+    <p class="text-muted">Vue d'ensemble de la plateforme</p>
+</div>
+
+<!-- Statistiques -->
+<div class="row g-4 mb-5">
+    <div class="col-md-6 col-lg-3">
+        <div class="stat-card primary">
+            <div class="icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <h3>{{ stats.users }}</h3>
+            <p>Utilisateurs</p>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <div class="stat-card success">
+            <div class="icon">
+                <i class="fas fa-paint-brush"></i>
+            </div>
+            <h3>{{ stats.artists }}</h3>
+            <p>Artistes</p>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <div class="stat-card info">
+            <div class="icon">
+                <i class="fas fa-image"></i>
+            </div>
+            <h3>{{ stats.artworks }}</h3>
+            <p>Œuvres</p>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <div class="stat-card warning">
+            <div class="icon">
+                <i class="fas fa-dollar-sign"></i>
+            </div>
+            <h3>{{ stats.revenue|number_format(2, ',', ' ') }} €</h3>
+            <p>Revenus totaux</p>
+        </div>
+    </div>
+</div>
+
+<!-- Modules de gestion -->
+<div class="row">
+    <div class="col-12 mb-4">
+        <h2 class="h4 mb-3"><i class="fas fa-cog me-2"></i>Modules de gestion</h2>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Module Utilisateurs -->
+    <div class="col-md-6 col-lg-4">
+        <a href="{{ path('admin_users_list') }}" class="module-card">
+            <div class="d-flex align-items-center">
+                <div class="icon-wrapper">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="ms-3">
+                    <h5 class="mb-1">Gestion Utilisateurs</h5>
+                    <p class="text-muted small mb-0">{{ stats.users }} utilisateurs</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- Module Œuvres -->
+    <div class="col-md-6 col-lg-4">
+        <a href="{{ path('admin_artworks_list') }}" class="module-card">
+            <div class="d-flex align-items-center">
+                <div class="icon-wrapper">
+                    <i class="fas fa-paint-brush"></i>
+                </div>
+                <div class="ms-3">
+                    <h5 class="mb-1">Gestion Œuvres</h5>
+                    <p class="text-muted small mb-0">{{ stats.artworks }} œuvres</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- Module Événements -->
+    <div class="col-md-6 col-lg-4">
+        <a href="{{ path('admin_events_list') }}" class="module-card">
+            <div class="d-flex align-items-center">
+                <div class="icon-wrapper">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div class="ms-3">
+                    <h5 class="mb-1">Gestion Événements</h5>
+                    <p class="text-muted small mb-0">{{ stats.events }} événements</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- Module Marketplace -->
+    <div class="col-md-6 col-lg-4">
+        <a href="{{ path('admin_marketplace_list') }}" class="module-card">
+            <div class="d-flex align-items-center">
+                <div class="icon-wrapper">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <div class="ms-3">
+                    <h5 class="mb-1">Marketplace</h5>
+                    <p class="text-muted small mb-0">{{ stats.listings }} annonces</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- Module Communauté -->
+    <div class="col-md-6 col-lg-4">
+        <a href="{{ path('admin_community_list') }}" class="module-card">
+            <div class="d-flex align-items-center">
+                <div class="icon-wrapper">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <div class="ms-3">
+                    <h5 class="mb-1">Modération Communauté</h5>
+                    <p class="text-muted small mb-0">{{ stats.posts }} posts</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- Module Statistiques -->
+    <div class="col-md-6 col-lg-4">
+        <div class="module-card" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);">
+            <div class="d-flex align-items-center">
+                <div class="icon-wrapper">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="ms-3">
+                    <h5 class="mb-1">Statistiques</h5>
+                    <p class="text-muted small mb-0">Vue d'ensemble</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Actions rapides -->
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card" style="border-radius: 15px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <div class="card-body">
+                <h5 class="card-title mb-4"><i class="fas fa-bolt me-2"></i>Actions rapides</h5>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <a href="{{ path('admin_artwork_new') }}" class="btn btn-primary w-100">
+                            <i class="fas fa-plus me-2"></i>Nouvelle œuvre
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ path('admin_events_list') }}" class="btn btn-success w-100">
+                            <i class="fas fa-calendar-plus me-2"></i>Nouvel événement
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ path('admin_users_list') }}" class="btn btn-info w-100">
+                            <i class="fas fa-user-plus me-2"></i>Nouvel utilisateur
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ path('admin_community_list') }}" class="btn btn-warning w-100">
+                            <i class="fas fa-shield-alt me-2"></i>Modération
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

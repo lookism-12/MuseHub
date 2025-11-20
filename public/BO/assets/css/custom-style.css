@@ -1,0 +1,134 @@
+/* ----------------------------------------------
+   MUSEHUB – Bright Minimal White/Grey Theme
+   Pure white + light grey only
+---------------------------------------------- */
+
+/* GLOBAL -------------------------------------------------- */
+body {
+    background: #FFFFFF !important; /* Pure white */
+    color: #2A2A2A !important;      /* Soft dark grey for text */
+}
+
+a, p, span, label, h1, h2, h3, h4, h5, h6 {
+    color: #2A2A2A !important;
+}
+
+/* Remove template accent colors */
+:root {
+    --theme-default: #2A2A2A !important;  /* soft dark grey */
+    --theme-secondary: #E6E6E6 !important;
+    --light-color: #F7F7F7 !important;
+}
+
+/* CARDS -------------------------------------------------- */
+.card,
+.card-body,
+.default-card,
+.dashboard-default-sec {
+    background: #FFFFFF !important;     /* full white */
+    border: 1px solid #F0F0F0 !important;
+    border-radius: 16px !important;
+    color: #2A2A2A !important;
+}
+
+/* SIDEBAR -------------------------------------------------- */
+.page-sidebar {
+    background: #FFFFFF !important;
+    border-right: 1px solid #F0F0F0 !important;
+}
+
+.page-sidebar .sidebar-list li a {
+    color: #2A2A2A !important;
+}
+
+.page-sidebar .sidebar-list li a:hover,
+.page-sidebar .sidebar-list li.active > a {
+    background: #F5F5F5 !important;
+}
+
+/* TOP NAV -------------------------------------------------- */
+.page-header {
+    background: #FFFFFF !important;
+    border-bottom: 1px solid #F0F0F0 !important;
+}
+
+.page-header .header-wrapper * {
+    color: #2A2A2A !important;
+}
+
+/* BUTTONS -------------------------------------------------- */
+.btn, button {
+    background: #2A2A2A !important;  /* soft dark grey */
+    color: #FFFFFF !important;
+    border: none !important;
+}
+
+.btn:hover, button:hover {
+    background: #4A4A4A !important;
+}
+
+.btn-light, .btn-outline {
+    background: #F5F5F5 !important;
+    color: #2A2A2A !important;
+}
+
+.btn-light:hover {
+    background: #EAEAEA !important;
+}
+
+/* SEARCH BAR ---------------------------------------------- */
+.search-full input {
+    background: #F7F7F7 !important;
+    border: 1px solid #EAEAEA !important;
+    color: #2A2A2A !important;
+}
+
+.search-full input:focus {
+    background: #FFFFFF !important;
+    border-color: #D5D5D5 !important;
+}
+
+/* TABLES -------------------------------------------------- */
+table {
+    background: #FFFFFF !important;
+    color: #2A2A2A !important;
+    border: 1px solid #F0F0F0 !important;
+}
+
+table th {
+    background: #F5F5F5 !important;
+}
+
+table td {
+    background: #FFFFFF !important;
+    border-bottom: 1px solid #F3F3F3 !important;
+}
+
+/* ICONS ---------------------------------------------------- */
+i, svg {
+    color: #2A2A2A !important;
+    stroke: #2A2A2A !important;
+}
+
+/* BADGES --------------------------------------------------- */
+.badge, .label {
+    background: #2A2A2A !important;
+    color: #FFFFFF !important;
+}
+
+/* CHARTS (ApexCharts) -------------------------------------- */
+.apexcharts-bar-series path {
+    fill: #2A2A2A !important;   /* soft dark grey bars */
+}
+
+.apexcharts-title-text,
+.apexcharts-xaxis-text,
+.apexcharts-yaxis-text {
+    fill: #2A2A2A !important;
+}
+
+/* Remove leftover template colors --------------------------- */
+[class*="bg-"], [class*="text-"], [style*="background"] {
+    background-color: #FFFFFF !important;
+    color: #2A2A2A !important;
+}

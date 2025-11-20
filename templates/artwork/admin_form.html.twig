@@ -1,0 +1,140 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}
+    {% if artwork %}Éditer une œuvre{% else %}Nouvelle œuvre{% endif %} - MuseHub Admin
+{% endblock %}
+
+{% block body %}
+<div class="mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="h3 mb-0">
+                <i class="fas fa-{{ artwork ? 'edit' : 'plus-circle' }} me-2"></i>
+                {% if artwork %}Éditer une œuvre{% else %}Nouvelle œuvre{% endif %}
+            </h1>
+            <p class="text-muted">{% if artwork %}Modifier les informations de l'œuvre{% else %}Créer une nouvelle œuvre d'art{% endif %}</p>
+        </div>
+        <a href="{{ path('admin_artwork_index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+        </a>
+    </div>
+</div>
+
+<div class="card" style="border-radius: 15px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <div class="card-body p-4">
+        <form method="post" enctype="multipart/form-data">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="title" class="form-label fw-bold">
+                        <i class="fas fa-heading me-2 text-primary"></i>Titre *
+                    </label>
+                    <input type="text" class="form-control" id="title" name="title" 
+                           value="{{ artwork ? artwork.title : '' }}" required 
+                           placeholder="Titre de l'œuvre">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="artist_uuid" class="form-label fw-bold">
+                        <i class="fas fa-user me-2 text-primary"></i>Artiste UUID *
+                    </label>
+                    <input type="text" class="form-control" id="artist_uuid" name="artist_uuid" 
+                           value="{{ artwork ? artwork.artistUuid : (app.user ? app.user.uuid : '') }}" required 
+                           placeholder="UUID de l'artiste">
+                    <small class="text-muted">UUID de l'artiste propriétaire</small>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="description" class="form-label fw-bold">
+                    <i class="fas fa-align-left me-2 text-primary"></i>Description
+                </label>
+                <textarea class="form-control" id="description" name="description" rows="4" 
+                          placeholder="Description détaillée de l'œuvre...">{{ artwork ? artwork.description : '' }}</textarea>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="image_file" class="form-label fw-bold">
+                        <i class="fas fa-upload me-2 text-primary"></i>Image de l'œuvre
+                    </label>
+                    <input type="file" class="form-control" id="image_file" name="image_file" accept="image/*">
+                    <small class="form-text text-muted">Formats acceptés: JPG, PNG, GIF, WEBP (max 5MB)</small>
+                    {% if artwork and artwork.imageUrl %}
+                        <div class="mt-2">
+                            <p class="small text-muted mb-1">Image actuelle:</p>
+                            <img src="{{ artwork.imageUrl }}" alt="Image actuelle" style="max-width: 200px; max-height: 200px; border-radius: 8px;">
+                        </div>
+                    {% endif %}
+                    <div class="mt-2">
+                        <img id="imagePreview" src="" alt="Aperçu" style="max-width: 200px; max-height: 200px; display: none; border-radius: 8px;">
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="image_url" class="form-label fw-bold">
+                        <i class="fas fa-link me-2 text-primary"></i>Ou URL de l'image (optionnel)
+                    </label>
+                    <input type="url" class="form-control" id="image_url" name="image_url" 
+                           value="{{ artwork and not artwork.imageUrl starts with '/uploads/' ? artwork.imageUrl : '' }}" 
+                           placeholder="https://example.com/image.jpg">
+                    <small class="form-text text-muted">Si vous préférez utiliser une URL au lieu d'uploader</small>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="price" class="form-label fw-bold">
+                        <i class="fas fa-euro-sign me-2 text-primary"></i>Prix (€)
+                    </label>
+                    <input type="number" step="0.01" class="form-control" id="price" name="price" 
+                           value="{{ artwork ? artwork.price : '' }}" 
+                           placeholder="0.00">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="status" class="form-label fw-bold">
+                        <i class="fas fa-eye me-2 text-primary"></i>Statut
+                    </label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="visible" {% if not artwork or artwork.status == 'visible' %}selected{% endif %}>Visible</option>
+                        <option value="hidden" {% if artwork and artwork.status == 'hidden' %}selected{% endif %}>Caché</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="category_id" class="form-label fw-bold">
+                    <i class="fas fa-tags me-2 text-primary"></i>Catégorie
+                </label>
+                <select class="form-select" id="category_id" name="category_id">
+                    <option value="">Aucune catégorie</option>
+                    {% for category in categories %}
+                        <option value="{{ category.id }}" {% if artwork and artwork.category and artwork.category.id == category.id %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                <a href="{{ path('admin_artwork_index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-2"></i>Annuler
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i>Enregistrer
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Preview image before upload
+    document.querySelector('input[name="image_file"]')?.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('imagePreview');
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Post #{{ post.id }}{% endblock %}
+
+{% block body %}
+<h1>Post #{{ post.id }}</h1>
+
+<p><strong>Auteur :</strong> {{ post.authorUuid }}</p>
+<p>{{ post.content|nl2br }}</p>
+{% if post.imageUrl %}
+    <img src="{{ post.imageUrl }}" style="max-width:400px;">
+{% endif %}
+<p><small>Publié le {{ post.createdAt|date('d/m/Y H:i') }}</small></p>
+<p>Likes : {{ post.likesCount }}</p>
+
+<hr>
+
+<h2>Commentaires</h2>
+
+{% for comment in post.comments %}
+    <div style="border-bottom:1px solid #ddd; margin-bottom:10px;">
+        <p><strong>{{ comment.commenterUuid }}</strong> a écrit :</p>
+        <p>{{ comment.content|nl2br }}</p>
+        <p><small>Le {{ comment.createdAt|date('d/m/Y H:i') }}</small></p>
+    </div>
+{% else %}
+    <p>Aucun commentaire.</p>
+{% endfor %}
+
+<hr>
+
+<h3>Ajouter un commentaire</h3>
+<form method="post">
+    <input type="text" name="commenter_uuid" placeholder="Votre UUID" required>
+    <br>
+    <textarea name="content" placeholder="Votre commentaire..." required></textarea>
+    <br>
+    <button type="submit">Envoyer</button>
+</form>
+
+<a href="{{ path('post_index') }}">← Retour à la liste</a>
+{% endblock %}
