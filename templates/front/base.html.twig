@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MuseHub - Plateforme Artistique{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #7f00ff;
+            --secondary-color: #FF9CB6;
+            --accent-color: #FFD0E6;
+            --light-bg: #F0F0F0;
+            --gray-color: #CACACA;
+            --dark: #2c3e50;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(140deg, rgba(196, 159, 255, 0.12), rgba(255, 156, 182, 0.12)), #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .navbar {
+            background: linear-gradient(135deg, rgba(196, 159, 255, 0.88) 0%, rgba(255, 156, 182, 0.88) 100%);
+            box-shadow: 0 12px 30px rgba(196, 159, 255, 0.18);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(14px);
+            position: relative;
+            z-index: 1000;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        .logo-img {
+            filter: brightness(0) invert(1);
+            transition: transform 0.3s;
+        }
+        .navbar-brand:hover .logo-img {
+            transform: scale(1.1);
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(196, 159, 255, 0.15);
+            transition: transform 0.3s, box-shadow 0.3s;
+            overflow: hidden;
+            background: white;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(255, 156, 182, 0.3);
+        }
+        .card-body {
+            padding: 1.5rem;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border: none;
+            border-radius: 25px;
+            padding: 10px 25px;
+            transition: all 0.3s ease;
+            color: white;
+        }
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(196, 159, 255, 0.5);
+            background: linear-gradient(135deg, #FF9CB6 0%, #7f00ff 100%);
+        }
+        .nav-link {
+            transition: all 0.3s ease;
+            border-radius: 5px;
+            margin: 0 5px;
+        }
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+        footer {
+            background: linear-gradient(135deg, rgba(44, 62, 80, 0.92) 0%, rgba(44, 62, 80, 0.82) 100%);
+            color: white;
+            padding: 40px 0 20px;
+            margin-top: 60px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 -10px 30px rgba(44, 62, 80, 0.25);
+        }
+        .artwork-image {
+            height: 250px;
+            object-fit: cover;
+            width: 100%;
+            border-radius: 15px 15px 0 0;
+            transition: transform 0.3s;
+        }
+        .card:hover .artwork-image {
+            transform: scale(1.05);
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(140deg, rgba(196, 159, 255, 0.12), rgba(255, 156, 182, 0.12)), #ffffff;
+            overflow-x: hidden;
+        }
+    </style>
+    {% block stylesheets %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="{{ path('home') }}">
+                <img src="{{ asset('assets/logo.png') }}" alt="MuseHub Logo" class="logo-img me-2" style="height: 40px; width: auto;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+                <span style="display: none;"><i class="fas fa-palette me-2"></i></span>
+                <span>MuseHub</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="{{ path('home') }}">Accueil</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ path('artworks') }}">Œuvres</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ path('events') }}">Événements</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ path('marketplace') }}">Marketplace</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ path('community') }}">Communauté</a></li>
+                    {% if app.user %}
+                        <li class="nav-item">
+                            <a class="nav-link position-relative" href="#" id="notification-toggle">
+                                <i class="fas fa-bell me-1"></i>Notifications
+                                <span class="badge bg-danger position-absolute top-0 start-100 translate-middle" id="notification-badge" style="display: none;"></span>
+                            </a>
+                        </li>
+                        {% if 'ROLE_ADMIN' in app.user.roles %}
+                            <li class="nav-item"><a class="nav-link" href="{{ path('admin_dashboard') }}"><i class="fas fa-tachometer-alt me-1"></i>Dashboard</a></li>
+                        {% endif %}
+                        <li class="nav-item"><a class="nav-link" href="{{ path('user_profile') }}"><i class="fas fa-user-circle me-1"></i>Mon profil</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ path('logout') }}"><i class="fas fa-sign-out-alt me-1"></i>Déconnexion</a></li>
+                    {% else %}
+                        <li class="nav-item"><a class="nav-link" href="{{ path('register') }}"><i class="fas fa-user-plus me-1"></i>Inscription</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ path('login') }}"><i class="fas fa-sign-in-alt me-1"></i>Connexion</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <div class="container mt-3">
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>{{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>{{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        </div>
+        {% block body %}{% endblock %}
+    </main>
+
+    <footer>
+        <div class="container text-center">
+            <p>&copy; {{ "now"|date("Y") }} MuseHub. Tous droits réservés.</p>
+            <p class="small">Plateforme de mise en relation entre artistes, galeries et amateurs d'art</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% if app.user %}
+    <script>
+        // Notification system
+        document.addEventListener('DOMContentLoaded', function() {
+            const notificationBadge = document.getElementById('notification-badge');
+            const notificationToggle = document.getElementById('notification-toggle');
+
+            // Fetch unread notification count
+            function updateNotificationCount() {
+                fetch('{{ path('api_notifications_unread_count') }}', {
+                    credentials: 'same-origin'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.unread_count > 0) {
+                        notificationBadge.textContent = data.unread_count > 99 ? '99+' : data.unread_count;
+                        notificationBadge.style.display = 'inline';
+                    } else {
+                        notificationBadge.style.display = 'none';
+                    }
+                })
+                .catch(() => {
+                    notificationBadge.style.display = 'none';
+                });
+            }
+
+            // Update count on page load
+            updateNotificationCount();
+
+            // Update count every 30 seconds
+            setInterval(updateNotificationCount, 30000);
+
+            // Placeholder for notification dropdown - can be expanded later
+            notificationToggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                alert('Notification system - feature coming soon!');
+            });
+        });
+    </script>
+    {% endif %}
+    {% block javascripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,86 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Statistiques Œuvres - MuseHub Admin{% endblock %}
+
+{% block body %}
+<div class="mb-4">
+    <a href="{{ path('admin_artworks_list') }}" class="btn btn-outline-secondary mb-3">
+        <i class="fas fa-arrow-left me-2"></i>Retour aux œuvres
+    </a>
+    <h1 class="h3 mb-0">Statistiques des Œuvres</h1>
+    <p class="text-muted">Vue détaillée des statistiques</p>
+</div>
+
+<!-- Statistiques générales -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card" style="border-radius: 15px; border-left: 4px solid #3b82f6;">
+            <div class="card-body">
+                <h3 class="text-primary">{{ stats.total }}</h3>
+                <p class="text-muted mb-0">Total œuvres</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card" style="border-radius: 15px; border-left: 4px solid #10b981;">
+            <div class="card-body">
+                <h3 class="text-success">{{ stats.visible }}</h3>
+                <p class="text-muted mb-0">Visibles</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card" style="border-radius: 15px; border-left: 4px solid #6b7280;">
+            <div class="card-body">
+                <h3 class="text-secondary">{{ stats.hidden }}</h3>
+                <p class="text-muted mb-0">Cachées</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistiques par catégorie -->
+<div class="card" style="border-radius: 15px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Répartition par catégorie</h5>
+    </div>
+    <div class="card-body">
+        {% if stats.by_category is defined and stats.by_category|length > 0 %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Catégorie</th>
+                        <th>Nombre d'œuvres</th>
+                        <th>Pourcentage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set total = stats.total %}
+                    {% for categoryName, count in stats.by_category %}
+                    <tr>
+                        <td><strong>{{ categoryName }}</strong></td>
+                        <td>{{ count }}</td>
+                        <td>
+                            {% if total > 0 %}
+                                {{ ((count / total) * 100)|number_format(1) }}%
+                            {% else %}
+                                0%
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="fas fa-chart-pie fa-2x text-muted mb-2"></i>
+            <p class="text-muted">Aucune statistique par catégorie disponible</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+

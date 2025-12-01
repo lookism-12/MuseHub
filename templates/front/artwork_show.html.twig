@@ -1,0 +1,70 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}{{ artwork.title }} - MuseHub{% endblock %}
+
+{% block body %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-md-6">
+            {% if artwork.imageUrl %}
+                <img src="{{ artwork.imageUrl }}" alt="{{ artwork.title }}" class="img-fluid rounded shadow" style="max-height: 600px; width: 100%; object-fit: contain;">
+            {% else %}
+                <div class="bg-light d-flex align-items-center justify-content-center rounded shadow" style="height: 400px;">
+                    <i class="fas fa-image fa-5x text-muted"></i>
+                </div>
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            <h1 class="display-4 mb-3">{{ artwork.title }}</h1>
+            
+            {% if artwork.category %}
+                <span class="badge mb-3" style="background: linear-gradient(135deg, #7f00ff 0%, #FFD0E6 100%); color: white; padding: 8px 15px; border-radius: 20px; font-size: 1rem;">
+                    {{ artwork.category.name }}
+                </span>
+            {% endif %}
+            
+            {% if artwork.description %}
+                <div class="mb-4">
+                    <h3>Description</h3>
+                    <p class="lead">{{ artwork.description|nl2br }}</p>
+                </div>
+            {% endif %}
+            
+            <div class="mb-4">
+                {% if artwork.price %}
+                    <h2 class="text-primary mb-3" style="color: #7f00ff !important;">
+                        <i class="fas fa-euro-sign me-2"></i>{{ artwork.price|number_format(2, ',', ' ') }} €
+                    </h2>
+                {% else %}
+                    <p class="text-muted">Prix sur demande</p>
+                {% endif %}
+            </div>
+            
+            <div class="d-flex gap-3 mb-4">
+                <a href="{{ path('marketplace') }}" class="btn btn-primary btn-lg" style="background: linear-gradient(135deg, #7f00ff 0%, #FF9CB6 100%); border: none;">
+                    <i class="fas fa-shopping-cart me-2"></i>Acheter maintenant
+                </a>
+                <a href="{{ path('artworks') }}" class="btn btn-outline-secondary btn-lg">
+                    <i class="fas fa-arrow-left me-2"></i>Retour
+                </a>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-info-circle me-2"></i>Informations</h5>
+                    <p class="card-text">
+                        <strong>Statut:</strong> 
+                        <span class="badge bg-success">{{ artwork.status }}</span>
+                    </p>
+                    {% if artwork.artistUuid %}
+                        <p class="card-text">
+                            <strong>Artiste:</strong> {{ artwork.artistUuid }}
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
