@@ -22,12 +22,6 @@ class EventType
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $description = null;
 
-    #[ORM\Column(type: 'string', length: 50, nullable: true)]
-    private ?string $icon = null; // FontAwesome class or emoji
-
-    #[ORM\Column(type: 'string', length: 7, nullable: true)]
-    private ?string $color = null; // Hex color code
-
     #[ORM\Column(type: 'string', length: 20)]
     private string $capacity_type = 'unlimited'; // unlimited, limited, invite_only
 
@@ -92,28 +86,6 @@ class EventType
     public function setDescription(?string $description): self
     {
         $this->description = $description;
-        return $this;
-    }
-
-    public function getIcon(): ?string
-    {
-        return $this->icon;
-    }
-
-    public function setIcon(?string $icon): self
-    {
-        $this->icon = $icon;
-        return $this;
-    }
-
-    public function getColor(): ?string
-    {
-        return $this->color;
-    }
-
-    public function setColor(?string $color): self
-    {
-        $this->color = $color;
         return $this;
     }
 

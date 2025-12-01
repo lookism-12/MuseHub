@@ -49,10 +49,8 @@
                         {% for type in eventTypes %}
                             <option value="{{ type.id }}" 
                                     {{ event.eventType and event.eventType.id == type.id ? 'selected' : '' }}
-                                    data-icon="{{ type.icon }}"
-                                    data-color="{{ type.color }}"
                                     data-description="{{ type.description }}">
-                                {{ type.icon }} {{ type.name }}
+                                {{ type.name }}
                                 {% if type.requiresPayment %}💰{% endif %}
                                 {% if type.certificateEnabled %}🎓{% endif %}
                             </option>

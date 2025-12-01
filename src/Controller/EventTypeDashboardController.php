@@ -88,8 +88,6 @@ class EventTypeDashboardController extends AbstractController
 
             $eventType->setName($name);
             $eventType->setDescription($request->request->get('description') ?: null);
-            $eventType->setIcon($request->request->get('icon') ?: null);
-            $eventType->setColor($request->request->get('color') ?: null);
             $eventType->setCapacityType($request->request->get('capacity_type', 'unlimited'));
             $eventType->setDefaultMaxParticipants($request->request->get('default_max_participants') ? (int)$request->request->get('default_max_participants') : null);
             $eventType->setTypicalDurationHours($request->request->get('typical_duration_hours') ? (int)$request->request->get('typical_duration_hours') : null);
@@ -138,8 +136,6 @@ class EventTypeDashboardController extends AbstractController
 
             $eventType->setName($name);
             $eventType->setDescription($request->request->get('description') ?: null);
-            $eventType->setIcon($request->request->get('icon') ?: null);
-            $eventType->setColor($request->request->get('color') ?: null);
             $eventType->setCapacityType($request->request->get('capacity_type', 'unlimited'));
             $eventType->setDefaultMaxParticipants($request->request->get('default_max_participants') ? (int)$request->request->get('default_max_participants') : null);
             $eventType->setTypicalDurationHours($request->request->get('typical_duration_hours') ? (int)$request->request->get('typical_duration_hours') : null);

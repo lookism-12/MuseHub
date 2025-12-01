@@ -87,7 +87,6 @@
                 <thead>
                     <tr>
                         <th style="width: 60px;">Ordre</th>
-                        <th style="width: 70px;">Icône</th>
                         <th>Nom</th>
                         <th>Capacité</th>
                         <th>Durée</th>
@@ -103,15 +102,9 @@
                         <td class="text-center">
                             <span class="badge bg-secondary">{{ type.sortOrder }}</span>
                         </td>
-                        <td class="text-center">
-                            <div style="font-size: 2rem; line-height: 1;">{{ type.icon|default('📅') }}</div>
-                        </td>
                         <td>
                             <div>
                                 <strong>{{ type.name }}</strong>
-                                {% if type.color %}
-                                    <span class="ms-2" style="display: inline-block; width: 20px; height: 20px; background-color: {{ type.color }}; border-radius: 4px; vertical-align: middle;"></span>
-                                {% endif %}
                             </div>
                             {% if type.description %}
                                 <small class="text-muted">{{ type.description }}</small>
