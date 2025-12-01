@@ -95,8 +95,8 @@
                         <td><strong>{{ event.title }}</strong></td>
                         <td>
                             {% if event.eventType %}
-                                <span class="badge" style="background-color: {{ event.eventType.color }}20; color: {{ event.eventType.color }}; border: 1px solid {{ event.eventType.color }};">
-                                    {{ event.eventType.icon }} {{ event.eventType.name }}
+                                <span class="badge bg-secondary">
+                                    {{ event.eventType.name }}
                                 </span>
                             {% else %}
                                 <span class="text-muted">-</span>

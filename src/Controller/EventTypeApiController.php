@@ -100,8 +100,6 @@ class EventTypeApiController extends AbstractController
         $eventType = new EventType();
         $eventType->setName($data['name']);
         $eventType->setDescription($data['description'] ?? null);
-        $eventType->setIcon($data['icon'] ?? null);
-        $eventType->setColor($data['color'] ?? null);
         $eventType->setCapacityType($data['capacity_type'] ?? 'unlimited');
         $eventType->setDefaultMaxParticipants($data['default_max_participants'] ?? null);
         $eventType->setTypicalDurationHours($data['typical_duration_hours'] ?? null);
@@ -135,8 +133,6 @@ class EventTypeApiController extends AbstractController
         
         if (isset($data['name'])) $eventType->setName($data['name']);
         if (isset($data['description'])) $eventType->setDescription($data['description']);
-        if (isset($data['icon'])) $eventType->setIcon($data['icon']);
-        if (isset($data['color'])) $eventType->setColor($data['color']);
         if (isset($data['capacity_type'])) $eventType->setCapacityType($data['capacity_type']);
         if (isset($data['default_max_participants'])) $eventType->setDefaultMaxParticipants($data['default_max_participants']);
         if (isset($data['typical_duration_hours'])) $eventType->setTypicalDurationHours($data['typical_duration_hours']);

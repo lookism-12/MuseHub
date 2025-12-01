@@ -32,6 +32,23 @@
                                 <span class="badge bg-info">Sur place</span>
                             {% endif %}
                         </p>
+                        {% if event.eventType %}
+                        <p class="mb-1">
+                            <i class="fas fa-tag text-primary me-2"></i>
+                            <span class="badge bg-secondary text-white" 
+                                  data-bs-toggle="tooltip" 
+                                  data-bs-html="true"
+                                  data-bs-placement="top" 
+                                  title="<strong>{{ event.eventType.name }}</strong><br>
+                                         {{ event.eventType.description }}<br>
+                                         <hr style='margin: 5px 0; border-color: rgba(255,255,255,0.3);'>
+                                         💰 {{ event.eventType.requiresPayment ? 'Payant' : 'Gratuit' }}<br>
+                                         ⏱️ Durée: {{ event.eventType.typicalDurationHours ? event.eventType.typicalDurationHours ~ 'h' : 'Non définie' }}<br>
+                                         👥 Capacité: {% if event.eventType.capacityType == 'unlimited' %}Illimitée{% elseif event.eventType.capacityType == 'limited' %}{{ event.eventType.defaultMaxParticipants }} places max{% else %}Sur invitation{% endif %}">
+                                {{ event.eventType.name }}
+                            </span>
+                        </p>
+                        {% endif %}
                     </div>
                     {% if event.description %}
                         <p class="card-text">{{ event.description|slice(0, 120) }}{% if event.description|length > 120 %}...{% endif %}</p>
@@ -67,4 +84,16 @@
 </div>
 {% endblock %}
 
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Activer les tooltips Bootstrap
+        document.addEventListener('DOMContentLoaded', function() {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
+{% endblock %}
 
