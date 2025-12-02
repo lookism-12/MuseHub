@@ -17,6 +17,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 #[Route('/profile')]
@@ -26,7 +27,8 @@ class ProfileController extends AbstractController
     public function __construct(
         private EntityManagerInterface $entityManager,
         private ParameterBagInterface $parameterBag,
-        private SluggerInterface $slugger
+        private SluggerInterface $slugger,
+        private UserPasswordHasherInterface $passwordHasher
     ) {
     }
 
@@ -75,6 +77,22 @@ class ProfileController extends AbstractController
                 }
 
                 $user->setAvatarUrl('/uploads/avatars/' . $newFilename);
+            }
+
+            $plainPassword = (string)$form->get('plainPassword')->getData();
+            if ($plainPassword !== '') {
+                $currentPassword = (string)$form->get('currentPassword')->getData();
+                if ($currentPassword === '') {
+                    $this->addFlash('error', 'Veuillez confirmer votre mot de passe actuel avant de le modifier.');
+                    return $this->redirectToRoute('user_profile');
+                }
+
+                if (!$this->passwordHasher->isPasswordValid($user, $currentPassword)) {
+                    $this->addFlash('error', 'Le mot de passe actuel est incorrect.');
+                    return $this->redirectToRoute('user_profile');
+                }
+
+                $user->setPassword($this->passwordHasher->hashPassword($user, $plainPassword));
             }
 
             $this->entityManager->flush();

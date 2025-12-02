@@ -159,19 +159,20 @@
 {% endblock %}
 
 {% block body %}
-    {% set avatarPath = user.avatarUrl ? (user.avatarUrl starts with 'http' ? user.avatarUrl : asset(user.avatarUrl)) : asset('assets/logo.png') %}
+{% set avatarPath = user.avatarUrl ? (user.avatarUrl starts with 'http' ? user.avatarUrl : asset(user.avatarUrl)) : asset('assets/logo.png') %}
+{% set displayName = (user.firstName or user.lastName) ? (user.firstName ~ ' ' ~ user.lastName)|trim : (user.username ?: user.email) %}
 
     <section class="profile-hero">
         <div class="container">
             <div class="profile-header">
-                <img src="{{ avatarPath }}" alt="Photo de {{ user.username ?: user.email }}" class="profile-avatar">
+                <img src="{{ avatarPath }}" alt="Photo de {{ displayName }}" class="profile-avatar">
                 <div class="profile-meta">
                     <div class="mb-2">
                         {% for role in user.roles %}
                             <span class="role-chip"><i class="fas fa-certificate me-2"></i>{{ role|replace({'ROLE_': ''})|title }}</span>
                         {% endfor %}
                     </div>
-                    <h1>{{ user.username ?: user.email }}</h1>
+                    <h1>{{ displayName }}</h1>
                     <p class="mb-3 text-white-50"><i class="fas fa-calendar-alt me-2"></i>Membre depuis {{ user.createdAt ? user.createdAt|date('F Y') : 'peu' }}</p>
                     <div class="d-flex flex-wrap gap-2">
                         <a href="mailto:{{ user.email }}" class="btn btn-light btn-sm rounded-pill px-4"><i class="fas fa-envelope me-2"></i>Contacter</a>
@@ -213,6 +214,9 @@
                     </p>
                     <ul class="info-list mt-4">
                         <li><i class="fas fa-user"></i>Identifiant : {{ user.uuid }}</li>
+                        {% if user.firstName or user.lastName %}
+                            <li><i class="fas fa-address-card"></i>{{ user.firstName }} {{ user.lastName }}</li>
+                        {% endif %}
                         <li><i class="fas fa-envelope-open-text"></i>{{ user.email }}</li>
                         <li><i class="fas fa-shield-alt"></i>Status : {{ user.isActive ? 'Compte actif' : 'Compte inactif' }}</li>
                     </ul>
@@ -233,21 +237,57 @@
                     <p class="text-muted mb-4">Actualisez votre bio, votre nom d’affichage et votre photo comme sur un profil Facebook professionnel.</p>
 
                     {{ form_start(form) }}
-                        <div class="mb-3">
-                            {{ form_label(form.username) }}
-                            {{ form_widget(form.username) }}
-                        </div>
-                        <div class="mb-3">
-                            {{ form_label(form.bio) }}
-                            {{ form_widget(form.bio) }}
-                        </div>
-                        <div class="mb-3">
-                            {{ form_label(form.avatar) }}
-                            {{ form_widget(form.avatar) }}
-                            <div class="upload-hint mt-2">
-                                <i class="fas fa-info-circle me-1"></i>JPG, PNG, GIF ou WEBP – 5 Mo max.
+                        <div class="mb-4">
+                            <h6 class="text-uppercase text-muted fw-semibold mb-3"><i class="fas fa-user-edit me-2 text-primary"></i>Identité</h6>
+                            <div class="row g-3">
+                                <div class="col-sm-6">
+                                    {{ form_row(form.firstName) }}
+                                </div>
+                                <div class="col-sm-6">
+                                    {{ form_row(form.lastName) }}
+                                </div>
+                                <div class="col-12">
+                                    {{ form_row(form.username) }}
+                                </div>
                             </div>
                         </div>
+
+                        <div class="mb-4">
+                            <h6 class="text-uppercase text-muted fw-semibold mb-3"><i class="fas fa-at me-2 text-primary"></i>Contact</h6>
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    {{ form_row(form.email) }}
+                                </div>
+                                <div class="col-12">
+                                    {{ form_row(form.bio) }}
+                                </div>
+                                <div class="col-12">
+                                    {{ form_row(form.avatar) }}
+                                    <div class="upload-hint mt-2">
+                                        <i class="fas fa-info-circle me-1"></i>JPG, PNG, GIF ou WEBP – 5 Mo max.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h6 class="text-uppercase text-muted fw-semibold mb-3"><i class="fas fa-lock me-2 text-primary"></i>Sécurité</h6>
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    {{ form_row(form.currentPassword) }}
+                                </div>
+                                <div class="col-12">
+                                    {{ form_row(form.plainPassword.first) }}
+                                </div>
+                                <div class="col-12">
+                                    {{ form_row(form.plainPassword.second) }}
+                                </div>
+                            </div>
+                            <p class="small text-muted mt-2 mb-0">
+                                <i class="fas fa-info-circle me-1"></i>Laissez les champs vides si vous ne souhaitez pas modifier votre mot de passe.
+                            </p>
+                        </div>
+
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save me-2"></i>Enregistrer les modifications
                         </button>
