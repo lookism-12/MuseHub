@@ -35,9 +35,24 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-md-5 d-flex gap-2">
+            <div class="col-md-3">
+                <label class="form-label text-muted small mb-1">Trier par</label>
+                <select name="sort" class="form-select">
+                    <option value="id_asc" {{ sortBy == 'id_asc' ? 'selected' : '' }}>ID (croissant)</option>
+                    <option value="id_desc" {{ sortBy == 'id_desc' ? 'selected' : '' }}>ID (décroissant)</option>
+                    <option value="date_desc" {{ sortBy == 'date_desc' ? 'selected' : '' }}>Date (plus récent)</option>
+                    <option value="date_asc" {{ sortBy == 'date_asc' ? 'selected' : '' }}>Date (plus ancien)</option>
+                    <option value="title_asc" {{ sortBy == 'title_asc' ? 'selected' : '' }}>Titre (A-Z)</option>
+                    <option value="title_desc" {{ sortBy == 'title_desc' ? 'selected' : '' }}>Titre (Z-A)</option>
+                    <option value="created_desc" {{ sortBy == 'created_desc' ? 'selected' : '' }}>Ajouté (récent)</option>
+                    <option value="created_asc" {{ sortBy == 'created_asc' ? 'selected' : '' }}>Ajouté (ancien)</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
                 <button type="submit" class="btn btn-primary flex-grow-1">Appliquer</button>
-                <a href="{{ path('admin_events_list') }}" class="btn btn-outline-secondary">Réinitialiser</a>
+                <a href="{{ path('admin_events_list') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-redo"></i>
+                </a>
             </div>
         </form>
     </div>

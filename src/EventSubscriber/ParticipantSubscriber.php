@@ -3,6 +3,10 @@
 namespace App\EventSubscriber;
 
 use App\Service\NotificationManager;
+use App\Repository\EventRepository;
+use App\Repository\UserRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\ORM\Event\PostPersistEventArgs;
 use Doctrine\ORM\Event\PostUpdateEventArgs;
@@ -14,7 +18,11 @@ use App\Entity\Participant;
 class ParticipantSubscriber
 {
     public function __construct(
-        private NotificationManager $notificationManager
+        private NotificationManager $notificationManager,
+        private EventRepository $eventRepository,
+        private UserRepository $userRepository,
+        private EntityManagerInterface $em,
+        private LoggerInterface $logger
     ) {}
 
     /**
@@ -28,46 +36,80 @@ class ParticipantSubscriber
             return;
         }
 
-        $event = $entity->getEvent();
-        $user = $entity->getUser();
+        $eventUuid = $entity->getEventUuid();
+        $participantUuid = $entity->getParticipantUuid();
+
+        $this->logger->info("ParticipantSubscriber triggered", [
+            'eventUuid' => $eventUuid,
+            'participantUuid' => $participantUuid
+        ]);
+
+        $event = $this->eventRepository->findOneBy(['uuid' => $eventUuid]);
+        $user = $this->userRepository->findOneBy(['uuid' => $participantUuid]);
 
         if (!$event || !$user) {
+            $this->logger->warning("Event or User not found", [
+                'eventFound' => $event !== null,
+                'userFound' => $user !== null
+            ]);
             return;
         }
 
+        $this->logger->info("Creating notifications", [
+            'event' => $event->getTitle(),
+            'user' => $user->getEmail(),
+            'eventDate' => $event->getDateTime()->format('Y-m-d H:i:s')
+        ]);
+
+        $now = new \DateTimeImmutable();
+        
         // Notification immédiate de confirmation
-        $this->notificationManager->scheduleNotification(
+        $confirmNotif = $this->notificationManager->scheduleNotification(
             $event,
             $user,
             'event_created',
-            new \DateTime(),
+            $now,
             'email'
         );
+        $this->logger->info("Confirmation notification", ['created' => $confirmNotif !== null]);
 
         // Rappel 24h avant
-        $reminder24h = (clone $event->getDateTime())->modify('-24 hours');
-        if ($reminder24h > new \DateTime()) {
-            $this->notificationManager->scheduleNotification(
+        $reminder24h = $event->getDateTime()->modify('-24 hours');
+        $this->logger->info("Reminder 24h", [
+            'scheduledAt' => $reminder24h->format('Y-m-d H:i:s'),
+            'isFuture' => $reminder24h > $now
+        ]);
+        
+        if ($reminder24h > $now) {
+            $notif24h = $this->notificationManager->scheduleNotification(
                 $event,
                 $user,
                 'reminder_24h',
                 $reminder24h
             );
+            $this->logger->info("24h reminder created", ['created' => $notif24h !== null]);
         }
 
         // Rappel 1h avant
-        $reminder1h = (clone $event->getDateTime())->modify('-1 hour');
-        if ($reminder1h > new \DateTime()) {
-            $this->notificationManager->scheduleNotification(
+        $reminder1h = $event->getDateTime()->modify('-1 hour');
+        $this->logger->info("Reminder 1h", [
+            'scheduledAt' => $reminder1h->format('Y-m-d H:i:s'),
+            'isFuture' => $reminder1h > $now
+        ]);
+        
+        if ($reminder1h > $now) {
+            $notif1h = $this->notificationManager->scheduleNotification(
                 $event,
                 $user,
                 'reminder_1h',
                 $reminder1h
             );
+            $this->logger->info("1h reminder created", ['created' => $notif1h !== null]);
         }
 
-        // Persister les notifications
-        $args->getObjectManager()->flush();
+        // Sauvegarder les notifications
+        $this->em->flush();
+        $this->logger->info("Notifications flushed to database");
     }
 
     /**

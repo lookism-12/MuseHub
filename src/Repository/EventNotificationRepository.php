@@ -18,7 +18,7 @@ class EventNotificationRepository extends ServiceEntityRepository
     /**
      * Récupère les notifications en attente qui doivent être envoyées
      */
-    public function findPendingNotifications(\DateTime $before = null): array
+    public function findPendingNotifications(\DateTimeInterface $before = null): array
     {
         $qb = $this->createQueryBuilder('n')
             ->where('n.status = :status')
@@ -67,7 +67,7 @@ class EventNotificationRepository extends ServiceEntityRepository
     }
 
     /**
-     * Vérifie si une notification existe déjà
+     * Vérifie si une notification pending existe déjà (pour éviter les doublons)
      */
     public function notificationExists(Event $event, User $user, string $type): bool
     {
@@ -76,9 +76,11 @@ class EventNotificationRepository extends ServiceEntityRepository
             ->where('n.event = :event')
             ->andWhere('n.user = :user')
             ->andWhere('n.type = :type')
+            ->andWhere('n.status = :status')
             ->setParameter('event', $event)
             ->setParameter('user', $user)
             ->setParameter('type', $type)
+            ->setParameter('status', 'pending')
             ->getQuery()
             ->getSingleScalarResult();
 

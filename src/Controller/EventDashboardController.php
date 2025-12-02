@@ -30,6 +30,7 @@ class EventDashboardController extends AbstractController
     {
         $statusFilter = $request->query->get('status', 'all');
         $search = trim((string)$request->query->get('q', ''));
+        $sortBy = $request->query->get('sort', 'date_desc'); // Nouveau paramètre de tri
 
         $qb = $this->eventRepository->createQueryBuilder('e');
 
@@ -49,7 +50,20 @@ class EventDashboardController extends AbstractController
                 ->setParameter('search', '%' . strtolower($search) . '%');
         }
 
-        $events = $qb->orderBy('e.dateTime', 'DESC')->getQuery()->getResult();
+        // Appliquer le tri selon le paramètre
+        match($sortBy) {
+            'id_asc' => $qb->orderBy('e.id', 'ASC'),
+            'id_desc' => $qb->orderBy('e.id', 'DESC'),
+            'date_asc' => $qb->orderBy('e.dateTime', 'ASC'),
+            'date_desc' => $qb->orderBy('e.dateTime', 'DESC'),
+            'title_asc' => $qb->orderBy('e.title', 'ASC'),
+            'title_desc' => $qb->orderBy('e.title', 'DESC'),
+            'created_asc' => $qb->orderBy('e.createdAt', 'ASC'),
+            'created_desc' => $qb->orderBy('e.createdAt', 'DESC'),
+            default => $qb->orderBy('e.dateTime', 'DESC')
+        };
+
+        $events = $qb->getQuery()->getResult();
 
         $upcoming = $this->eventRepository->findUpcoming();
         $all = $this->eventRepository->findAll();
@@ -66,6 +80,7 @@ class EventDashboardController extends AbstractController
             'stats' => $stats,
             'statusFilter' => $statusFilter,
             'search' => $search,
+            'sortBy' => $sortBy,
         ]);
     }
 

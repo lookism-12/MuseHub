@@ -30,11 +30,11 @@ class EventNotification
     #[ORM\Column(type: 'string', length: 20)]
     private string $status = 'pending'; // pending, sent, failed
 
-    #[ORM\Column(type: 'datetime')]
-    private \DateTime $scheduledAt;
+    #[ORM\Column(type: 'datetime_immutable')]
+    private \DateTimeImmutable $scheduledAt;
 
-    #[ORM\Column(type: 'datetime', nullable: true)]
-    private ?\DateTime $sentAt = null;
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $sentAt = null;
 
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $message = null;
@@ -48,13 +48,13 @@ class EventNotification
     #[ORM\Column(type: 'integer')]
     private int $retryCount = 0;
 
-    #[ORM\Column(type: 'datetime')]
-    private \DateTime $createdAt;
+    #[ORM\Column(type: 'datetime_immutable')]
+    private \DateTimeImmutable $createdAt;
 
     public function __construct()
     {
-        $this->createdAt = new \DateTime();
-        $this->scheduledAt = new \DateTime();
+        $this->createdAt = new \DateTimeImmutable();
+        $this->scheduledAt = new \DateTimeImmutable();
     }
 
     // Getters and Setters
@@ -108,25 +108,25 @@ class EventNotification
         return $this;
     }
 
-    public function getScheduledAt(): \DateTime
+    public function getScheduledAt(): \DateTimeImmutable
     {
         return $this->scheduledAt;
     }
 
-    public function setScheduledAt(\DateTime $scheduledAt): self
+    public function setScheduledAt(\DateTimeInterface $scheduledAt): self
     {
-        $this->scheduledAt = $scheduledAt;
+        $this->scheduledAt = $scheduledAt instanceof \DateTimeImmutable ? $scheduledAt : \DateTimeImmutable::createFromMutable($scheduledAt);
         return $this;
     }
 
-    public function getSentAt(): ?\DateTime
+    public function getSentAt(): ?\DateTimeImmutable
     {
         return $this->sentAt;
     }
 
-    public function setSentAt(?\DateTime $sentAt): self
+    public function setSentAt(?\DateTimeInterface $sentAt): self
     {
-        $this->sentAt = $sentAt;
+        $this->sentAt = $sentAt ? ($sentAt instanceof \DateTimeImmutable ? $sentAt : \DateTimeImmutable::createFromMutable($sentAt)) : null;
         return $this;
     }
 
@@ -180,14 +180,14 @@ class EventNotification
         return $this;
     }
 
-    public function getCreatedAt(): \DateTime
+    public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTime $createdAt): self
+    public function setCreatedAt(\DateTimeInterface $createdAt): self
     {
-        $this->createdAt = $createdAt;
+        $this->createdAt = $createdAt instanceof \DateTimeImmutable ? $createdAt : \DateTimeImmutable::createFromMutable($createdAt);
         return $this;
     }
 
@@ -209,7 +209,7 @@ class EventNotification
     public function markAsSent(): self
     {
         $this->status = 'sent';
-        $this->sentAt = new \DateTime();
+        $this->sentAt = new \DateTimeImmutable();
         return $this;
     }
 

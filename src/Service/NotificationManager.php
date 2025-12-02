@@ -7,6 +7,8 @@ use App\Entity\EventNotification;
 use App\Entity\User;
 use App\Repository\EventNotificationRepository;
 use App\Repository\ParticipantRepository;
+use App\Repository\EventRepository;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
@@ -18,6 +20,8 @@ class NotificationManager
         private EntityManagerInterface $em,
         private EventNotificationRepository $notificationRepository,
         private ParticipantRepository $participantRepository,
+        private EventRepository $eventRepository,
+        private UserRepository $userRepository,
         private MailerInterface $mailer,
         private LoggerInterface $logger
     ) {}
@@ -27,10 +31,10 @@ class NotificationManager
      */
     public function scheduleNotificationsForEvent(Event $event): void
     {
-        $participants = $this->participantRepository->findBy(['event' => $event]);
+        $participants = $this->participantRepository->findBy(['eventUuid' => $event->getUuid()]);
         
         foreach ($participants as $participant) {
-            $user = $participant->getUser();
+            $user = $this->userRepository->findOneBy(['uuid' => $participant->getParticipantUuid()]);
             if (!$user) {
                 continue;
             }
@@ -40,7 +44,7 @@ class NotificationManager
                 $event,
                 $user,
                 'reminder_24h',
-                (clone $event->getDateTime())->modify('-24 hours')
+                $event->getDateTime()->modify('-24 hours')
             );
 
             // Rappel 1h avant
@@ -48,7 +52,7 @@ class NotificationManager
                 $event,
                 $user,
                 'reminder_1h',
-                (clone $event->getDateTime())->modify('-1 hour')
+                $event->getDateTime()->modify('-1 hour')
             );
         }
 
@@ -62,7 +66,7 @@ class NotificationManager
         Event $event,
         User $user,
         string $type,
-        \DateTime $scheduledAt,
+        \DateTimeInterface $scheduledAt,
         string $channel = 'email'
     ): ?EventNotification {
         // Vérifier si la notification existe déjà
@@ -71,7 +75,7 @@ class NotificationManager
         }
 
         // Ne pas planifier si la date est déjà passée
-        if ($scheduledAt < new \DateTime()) {
+        if ($scheduledAt < new \DateTimeImmutable()) {
             return null;
         }
 
@@ -93,11 +97,11 @@ class NotificationManager
      */
     public function notifyParticipants(Event $event, string $type, string $customMessage = null): int
     {
-        $participants = $this->participantRepository->findBy(['event' => $event]);
+        $participants = $this->participantRepository->findBy(['eventUuid' => $event->getUuid()]);
         $sentCount = 0;
 
         foreach ($participants as $participant) {
-            $user = $participant->getUser();
+            $user = $this->userRepository->findOneBy(['uuid' => $participant->getParticipantUuid()]);
             if (!$user) {
                 continue;
             }
@@ -106,7 +110,7 @@ class NotificationManager
             $notification->setEvent($event);
             $notification->setUser($user);
             $notification->setType($type);
-            $notification->setScheduledAt(new \DateTime());
+            $notification->setScheduledAt(new \DateTimeImmutable());
             $notification->setMessage($customMessage ?? $this->generateMessage($event, $type));
 
             $this->em->persist($notification);
@@ -127,7 +131,7 @@ class NotificationManager
      */
     public function sendPendingNotifications(): int
     {
-        $notifications = $this->notificationRepository->findPendingNotifications(new \DateTime());
+        $notifications = $this->notificationRepository->findPendingNotifications(new \DateTimeImmutable());
         $sentCount = 0;
 
         foreach ($notifications as $notification) {
