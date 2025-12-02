@@ -1,0 +1,410 @@
+/* Modern User Profile Styles */
+
+/* Modern Card Header with Gradient */
+.hovercard .cardheader {
+  background: linear-gradient(135deg, #7B2CBF 0%, #9D4EDD 50%, #C77DFF 100%);
+  height: 200px;
+  position: relative;
+  border-radius: 15px 15px 0 0;
+  overflow: hidden;
+}
+
+.hovercard .cardheader::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+  opacity: 0.3;
+}
+
+.header-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.2) 0%, transparent 50%);
+}
+
+.avatar-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(123, 44, 191, 0.1), rgba(157, 78, 221, 0.1));
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.avatar:hover .avatar-overlay {
+  opacity: 1;
+}
+
+.modern-divider {
+  border: none;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #e9ecef, transparent);
+  margin: 25px 0;
+}
+
+/* Modern Avatar with Glow Effect */
+.user-image {
+  position: relative;
+  margin-top: -80px;
+  z-index: 2;
+}
+
+.user-image .avatar {
+  width: 160px;
+  height: 160px;
+  margin: 0 auto;
+  position: relative;
+  border: 5px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 10px 40px rgba(123, 44, 191, 0.3), 0 0 0 4px rgba(123, 44, 191, 0.1);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.user-image .avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 15px 50px rgba(123, 44, 191, 0.4), 0 0 0 6px rgba(123, 44, 191, 0.15);
+}
+
+.user-image .avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+/* Modern Edit Icon */
+.icon-wrapper {
+  position: absolute;
+  bottom: 10px;
+  right: calc(50% - 80px);
+  width: 45px;
+  height: 45px;
+  background: linear-gradient(135deg, #7B2CBF, #9D4EDD);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 5px 20px rgba(123, 44, 191, 0.4);
+  transition: all 0.3s ease;
+  border: 3px solid #fff;
+}
+
+.icon-wrapper:hover {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 8px 30px rgba(123, 44, 191, 0.5);
+}
+
+.icon-wrapper i {
+  color: #fff;
+  font-size: 18px;
+}
+
+/* Modern Card */
+.hovercard {
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  border: none;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  background: #fff;
+}
+
+.hovercard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 60px rgba(123, 44, 191, 0.15);
+}
+
+/* Modern Info Section */
+.hovercard .info {
+  padding: 30px 25px 25px;
+  background: #fff;
+}
+
+.user-designation .title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 8px;
+}
+
+.user-designation .title a {
+  color: #2c3e50;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.user-designation .title a:hover {
+  color: #7B2CBF;
+}
+
+.user-designation .desc {
+  font-size: 16px;
+  color: #7B2CBF;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Modern Info Cards */
+.ttl-info {
+  padding: 15px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border-radius: 12px;
+  margin-bottom: 15px;
+  border: 1px solid #e9ecef;
+  transition: all 0.3s ease;
+}
+
+.ttl-info:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 20px rgba(123, 44, 191, 0.1);
+  border-color: #7B2CBF;
+}
+
+.ttl-info h6 {
+  font-size: 12px;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.ttl-info h6 i {
+  color: #7B2CBF;
+  margin-right: 8px;
+}
+
+.ttl-info span {
+  font-size: 15px;
+  color: #2c3e50;
+  font-weight: 500;
+  display: block;
+}
+
+/* Modern Social Media Icons */
+.social-media {
+  margin: 25px 0;
+}
+
+.social-media ul {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.social-media li a {
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #7B2CBF, #9D4EDD);
+  color: #fff;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(123, 44, 191, 0.3);
+}
+
+.social-media li a:hover {
+  transform: translateY(-5px) scale(1.1);
+  box-shadow: 0 8px 25px rgba(123, 44, 191, 0.4);
+}
+
+.social-media li a i {
+  font-size: 18px;
+}
+
+/* Modern Follow Section */
+.follow {
+  margin-top: 25px;
+  padding-top: 25px;
+  border-top: 2px solid #e9ecef;
+}
+
+.follow-num {
+  font-size: 32px;
+  font-weight: 700;
+  color: #7B2CBF;
+  line-height: 1;
+  margin-bottom: 5px;
+}
+
+.follow span {
+  font-size: 14px;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+
+.border-right {
+  border-right: 2px solid #e9ecef !important;
+}
+
+/* Modern Profile Posts */
+.profile-img-style {
+  padding: 25px;
+}
+
+.profile-img-style .user-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.profile-img-style .img-thumbnail {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 3px solid #7B2CBF;
+  object-fit: cover;
+}
+
+.profile-img-style .card {
+  border-radius: 20px;
+  border: none;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.profile-img-style .card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(123, 44, 191, 0.15);
+}
+
+.profile-img-style hr {
+  margin: 20px 0;
+  border-color: #e9ecef;
+  opacity: 0.5;
+}
+
+.profile-img-style p {
+  color: #495057;
+  line-height: 1.8;
+  font-size: 15px;
+}
+
+/* Modern Image Gallery */
+.img-container img,
+.pictures img {
+  border-radius: 15px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.img-container img:hover,
+.pictures img:hover {
+  transform: scale(1.05);
+  box-shadow: 0 10px 30px rgba(123, 44, 191, 0.2);
+}
+
+/* Modern Like/Comment Section */
+.like-comment {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e9ecef;
+}
+
+.like-comment ul {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.like-comment li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.like-comment a {
+  color: #6c757d;
+  transition: all 0.3s ease;
+  font-size: 18px;
+}
+
+.like-comment a:hover {
+  color: #7B2CBF;
+  transform: scale(1.2);
+}
+
+.like-comment label {
+  font-weight: 500;
+  color: #495057;
+  cursor: pointer;
+}
+
+.like-comment .counter {
+  font-weight: 700;
+  color: #7B2CBF;
+  font-size: 16px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .user-image .avatar {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .user-designation .title {
+    font-size: 24px;
+  }
+  
+  .ttl-info {
+    margin-bottom: 10px;
+  }
+  
+  .follow-num {
+    font-size: 24px;
+  }
+}
+
+/* Animation on Load */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hovercard,
+.profile-img-style .card {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Modern Badge/Status */
+.user-status {
+  display: inline-block;
+  padding: 5px 15px;
+  background: linear-gradient(135deg, #7B2CBF, #9D4EDD);
+  color: #fff;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 10px;
+}
+
