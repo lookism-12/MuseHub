@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-<<<<<<< HEAD
 use App\Repository\ArtworkRepository;
 use App\Repository\CategoryRepository;
 use App\Repository\EventRepository;
@@ -12,15 +11,12 @@ use App\Repository\ParticipantRepository;
 use App\Repository\PostReactionRepository;
 use App\Repository\PostRepository;
 use App\Repository\UserRepository;
-=======
->>>>>>> 776eda0bf4e6f00382b836d54d37240960c5e114
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 class FrontOfficeController extends AbstractController
 {
-<<<<<<< HEAD
     public function __construct(
         private ArtworkRepository $artworkRepository,
         private CategoryRepository $categoryRepository,
@@ -92,30 +88,11 @@ class FrontOfficeController extends AbstractController
         ))));
 
         return $this->fetchUserNamesByUuid($artistUuids, 'Artiste MuseHub');
-=======
-    #[Route('/', name: 'home')]
-    public function index(): Response
-    {
-        // Lire le contenu du fichier HTML du template client
-        $templatePath = $this->getParameter('kernel.project_dir') . '/templates/template-client/index.html';
-        
-        if (!file_exists($templatePath)) {
-            throw $this->createNotFoundException('Template not found');
-        }
-        
-        $content = file_get_contents($templatePath);
-        
-        // Remplacer les chemins relatifs des assets pour pointer vers /FO/assets/
-        $content = preg_replace('/(href|src)="\.\.\/FO\/assets\//', '$1="/FO/assets/', $content);
-        
-        return new Response($content);
->>>>>>> 776eda0bf4e6f00382b836d54d37240960c5e114
     }
 
     #[Route('/artworks', name: 'artworks')]
     public function artworks(): Response
     {
-<<<<<<< HEAD
         $artworks = $this->artworkRepository->findBy(
             ['status' => 'visible'],
             ['id' => 'DESC']
@@ -139,25 +116,17 @@ class FrontOfficeController extends AbstractController
         return $this->render('front/artwork_show.html.twig', [
             'artwork' => $artwork,
         ]);
-=======
-        return new Response('<h1>Page des œuvres (à venir)</h1>');
->>>>>>> 776eda0bf4e6f00382b836d54d37240960c5e114
     }
 
     #[Route('/artists', name: 'artists')]
     public function artists(): Response
     {
-<<<<<<< HEAD
         return $this->render('front/artists.html.twig');
-=======
-        return new Response('<h1>Page des artistes (à venir)</h1>');
->>>>>>> 776eda0bf4e6f00382b836d54d37240960c5e114
     }
 
     #[Route('/events', name: 'events')]
     public function events(): Response
     {
-<<<<<<< HEAD
         $events = $this->eventRepository->findUpcoming();
         $participationMap = [];
         $user = $this->getUser();
@@ -173,15 +142,11 @@ class FrontOfficeController extends AbstractController
             'events' => $events,
             'participationMap' => $participationMap,
         ]);
-=======
-        return new Response('<h1>Page des événements (à venir)</h1>');
->>>>>>> 776eda0bf4e6f00382b836d54d37240960c5e114
     }
 
     #[Route('/marketplace', name: 'marketplace')]
     public function marketplace(): Response
     {
-<<<<<<< HEAD
         $listings = $this->listingRepository->findAvailable();
         // Get artworks that the user owns (if logged in as artist) for creating listings
         $userArtworks = [];
@@ -334,14 +299,5 @@ class FrontOfficeController extends AbstractController
         }
 
         return $map;
-=======
-        return new Response('<h1>Page marketplace (à venir)</h1>');
-    }
-
-    #[Route('/community', name: 'community')]
-    public function community(): Response
-    {
-        return new Response('<h1>Page communauté (à venir)</h1>');
->>>>>>> 776eda0bf4e6f00382b836d54d37240960c5e114
     }
 }
