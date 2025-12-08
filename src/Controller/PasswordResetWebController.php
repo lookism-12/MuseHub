@@ -24,6 +24,16 @@ class PasswordResetWebController extends AbstractController
     ) {
     }
 
+    /**
+     * -------------------------------------------------------------------------
+     * PAGE : Mot de passe oublié
+     * -------------------------------------------------------------------------
+     * Corrections apportées :
+     * 1️⃣ Envoi email → adresse dynamique ($user->getEmail())
+     * 2️⃣ Utilisation d’un paramètre mailer_from (propre et configurable)
+     * 3️⃣ Ajout de logs et affichage du lien en DEV si le mail échoue
+     * 4️⃣ Vérification token vide + gestion propre des erreurs
+     */
     #[Route('/forgot-password', name: 'password_forgot', methods: ['GET', 'POST'])]
     public function forgotPassword(Request $request): Response
     {
@@ -34,43 +44,82 @@ class PasswordResetWebController extends AbstractController
         $email = '';
 
         if ($request->isMethod('POST')) {
+
+            // Vérification CSRF
             if (!$this->isCsrfTokenValid('forgot_password_form', (string)$request->request->get('_token'))) {
                 $this->addFlash('error', 'Le formulaire est expiré, merci de réessayer.');
                 return $this->redirectToRoute('password_forgot');
             }
 
+            // Email soumis
             $email = trim((string)$request->request->get('email'));
+
             if ($email && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+
                 $user = $this->userRepository->findOneBy(['email' => $email]);
+
                 if ($user) {
+
+                    // Création du token
                     $token = $this->passwordResetManager->createToken($user);
-                    $resetUrl = $this->urlGenerator->generate('password_reset_form', [
-                        'token' => $token,
-                    ], UrlGeneratorInterface::ABSOLUTE_URL);
+
+                    if (!$token) {
+                        error_log('[PasswordReset] createToken returned EMPTY for ' . $email);
+                        $this->addFlash('warning', 'Erreur interne. Impossible de générer le lien.');
+                        return $this->redirectToRoute('password_forgot');
+                    }
+
+                    // Création du lien
+                    $resetUrl = $this->urlGenerator->generate(
+                        'password_reset_form',
+                        ['token' => $token],
+                        UrlGeneratorInterface::ABSOLUTE_URL
+                    );
 
                     try {
+                        // Récupération propre de l’adresse FROM
+                        $fromEmail = $this->getParameter('mailer_from') ?? 'amenimakdouli@gmail.com';
+
                         $message = (new Email())
-                            ->from('noreply@musehub.com')
-                            ->to($user->getEmail())
+                            ->from($fromEmail)
+                            ->to($user->getEmail())    // 🔥 Correction : on envoie au bon user
                             ->subject('Réinitialisation du mot de passe MuseHub')
                             ->html(sprintf(
-                                'Cliquez sur ce lien pour réinitialiser votre mot de passe : <a href="%s">%s</a>',
+                                'Cliquez ici pour réinitialiser votre mot de passe : <a href="%s">%s</a>',
                                 $resetUrl,
                                 $resetUrl
                             ));
-                        $this->mailer->send($message);
-                    } catch (\Throwable $e) {
-                        error_log(sprintf('[PasswordReset] Email failure for %s: %s', $email, $e->getMessage()));
-                        $this->addFlash('warning', 'Impossible d\'envoyer l\'email automatiquement. Réessayez plus tard ou contactez l\'administrateur.');
 
+                        // ENVOI DU MAIL
+                        $this->mailer->send($message);
+
+                        $this->addFlash('success', 'Un email de réinitialisation a été envoyé à votre adresse.');
+
+                    } catch (\Throwable $e) {
+
+                        // Log utile pour debug
+                        error_log('[PasswordReset] Email error: ' . $e->getMessage());
+
+                        $this->addFlash(
+                            'warning',
+                            'Impossible d\'envoyer l\'email. Réessayez plus tard.'
+                        );
+
+                        // En DEV → on affiche quand même le lien pour tester !
                         if ($this->getParameter('kernel.environment') !== 'prod') {
-                            $this->addFlash('info', sprintf('Lien de réinitialisation (environnement dev): %s', $resetUrl));
+                            $this->addFlash('info', 'Lien (mode DEV) : ' . $resetUrl);
+                            error_log('[PasswordReset] DEV resetUrl: ' . $resetUrl);
                         }
                     }
+
+                } else {
+                    $this->addFlash('error', 'Aucun compte n’est associé à cet email.');
                 }
+
+            } else {
+                $this->addFlash('error', 'Veuillez entrer une adresse email valide.');
             }
 
-            $this->addFlash('success', 'Si un compte existe, un email a été envoyé.');
             return $this->redirectToRoute('password_forgot');
         }
 
@@ -79,6 +128,11 @@ class PasswordResetWebController extends AbstractController
         ]);
     }
 
+    /**
+     * -------------------------------------------------------------------------
+     * PAGE : Réinitialisation du mot de passe
+     * -------------------------------------------------------------------------
+     */
     #[Route('/reset-password/{token}', name: 'password_reset_form', methods: ['GET', 'POST'])]
     public function resetPassword(Request $request, string $token): Response
     {
@@ -87,14 +141,16 @@ class PasswordResetWebController extends AbstractController
         }
 
         $user = $this->passwordResetManager->findUserForToken($token);
+
         if (!$user) {
             $this->addFlash('error', 'Lien invalide ou expiré.');
             return $this->redirectToRoute('password_forgot');
         }
 
         if ($request->isMethod('POST')) {
+
             if (!$this->isCsrfTokenValid('reset_password_form', (string)$request->request->get('_token'))) {
-                $this->addFlash('error', 'Le formulaire est expiré, merci de réessayer.');
+                $this->addFlash('error', 'Le formulaire est expiré.');
                 return $this->redirectToRoute('password_reset_form', ['token' => $token]);
             }
 
@@ -106,10 +162,16 @@ class PasswordResetWebController extends AbstractController
             } elseif ($password !== $confirm) {
                 $this->addFlash('error', 'Les mots de passe ne correspondent pas.');
             } else {
-                $user->setPassword($this->passwordHasher->hashPassword($user, $password));
-                $this->passwordResetManager->clearToken($user);
-                $this->addFlash('success', 'Mot de passe mis à jour. Vous pouvez vous connecter.');
 
+                // Mise à jour
+                $user->setPassword(
+                    $this->passwordHasher->hashPassword($user, $password)
+                );
+
+                // On supprime le token
+                $this->passwordResetManager->clearToken($user);
+
+                $this->addFlash('success', 'Mot de passe mis à jour. Vous pouvez vous connecter.');
                 return $this->redirectToRoute('login');
             }
         }
@@ -119,5 +181,3 @@ class PasswordResetWebController extends AbstractController
         ]);
     }
 }
-
-

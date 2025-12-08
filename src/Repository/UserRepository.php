@@ -28,4 +28,35 @@ class UserRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
+
+    // Soft Delete Methods
+    public function findActive(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->where('u.deletedAt IS NULL')
+            ->orderBy('u.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findDeleted(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->where('u.deletedAt IS NOT NULL')
+            ->orderBy('u.deletedAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function restore(User $user): void
+    {
+        $user->restore();
+        $this->getEntityManager()->flush();
+    }
+
+    public function hardDelete(User $user): void
+    {
+        $this->getEntityManager()->remove($user);
+        $this->getEntityManager()->flush();
+    }
 }

@@ -23,7 +23,6 @@ class ArtworkAdminController extends AbstractController
         $artworks = $artworkRepository->findBy([], ['id' => 'DESC']);
         $categories = $categoryRepository->findAll();
         
-        // Calculer les statistiques
         $stats = [
             'total' => $artworkRepository->count([]),
             'visible' => $artworkRepository->count(['status' => 'visible']),
@@ -52,7 +51,6 @@ class ArtworkAdminController extends AbstractController
                 $artwork->setArtistUuid($artistUuid);
                 $artwork->setDescription($request->request->get('description') ?: null);
                 
-                // Handle file upload
                 $imageUrl = null;
                 $uploadedFile = $request->files->get('image_file');
                 
@@ -134,7 +132,6 @@ class ArtworkAdminController extends AbstractController
                 $artwork->setArtistUuid($artistUuid);
                 $artwork->setDescription($request->request->get('description') ?: null);
                 
-                // Handle file upload
                 $uploadedFile = $request->files->get('image_file');
                 
                 if ($uploadedFile && $uploadedFile->isValid()) {
@@ -149,7 +146,6 @@ class ArtworkAdminController extends AbstractController
                         return $this->redirectToRoute('admin_artwork_edit', ['id' => $id]);
                     }
                     
-                    // Delete old image if exists and is local
                     $oldImageUrl = $artwork->getImageUrl();
                     if ($oldImageUrl && strpos($oldImageUrl, '/uploads/artworks/') === 0) {
                         $oldImagePath = $this->getParameter('kernel.project_dir') . '/public' . $oldImageUrl;

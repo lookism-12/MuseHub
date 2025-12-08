@@ -37,8 +37,11 @@ class UserDashboardController extends AbstractController
         
         $qb = $this->userRepository->createQueryBuilder('u');
         
+        // Exclude deleted users (soft delete)
+        $qb->where('u.deletedAt IS NULL');
+        
         if ($role) {
-            $qb->where('u.roles LIKE :role')
+            $qb->andWhere('u.roles LIKE :role')
                 ->setParameter('role', '%' . $role . '%');
         }
 
@@ -202,10 +205,11 @@ class UserDashboardController extends AbstractController
             return $this->redirectToRoute('admin_users_list');
         }
 
-        $this->em->remove($user);
+        // Soft delete instead of hard delete
+        $user->softDelete();
         $this->em->flush();
 
-        $this->addFlash('success', 'Utilisateur supprimé.');
+        $this->addFlash('success', 'Utilisateur déplacé vers la corbeille.');
         return $this->redirectToRoute('admin_users_list');
     }
 }
