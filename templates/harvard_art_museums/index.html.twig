@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Harvard Art Museums Collection{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h1 class="mb-4">Harvard Art Museums Collection</h1>
+    
+    <div class="row">
+        {% for artwork in artworks.records %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    {% if artwork.primaryimageurl %}
+                        <img src="{{ artwork.primaryimageurl }}" class="card-img-top" alt="{{ artwork.title }}">
+                    {% else %}
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                            <span class="text-muted">No Image Available</span>
+                        </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ artwork.title }}</h5>
+                        <p class="card-text">
+                            {% if artwork.people is defined and artwork.people|length > 0 %}
+                                <strong>Artist:</strong> {{ artwork.people[0].name }}<br>
+                            {% endif %}
+                            {% if artwork.dated %}
+                                <strong>Date:</strong> {{ artwork.dated }}<br>
+                            {% endif %}
+                            {% if artwork.classification %}
+                                <strong>Classification:</strong> {{ artwork.classification }}
+                            {% endif %}
+                        </p>
+                        <a href="{{ artwork.url }}" target="_blank" class="btn btn-primary btn-sm">View on Museum Site</a>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12">
+                <p class="alert alert-info">No artworks found.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
