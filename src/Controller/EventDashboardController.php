@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Event;
 use App\Repository\EventRepository;
+use App\Repository\EventTypeRepository;
 use App\Repository\ParticipantRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -18,6 +19,7 @@ class EventDashboardController extends AbstractController
 {
     public function __construct(
         private EventRepository $eventRepository,
+        private EventTypeRepository $eventTypeRepository,
         private ParticipantRepository $participantRepository,
         private EntityManagerInterface $em
     ) {
@@ -101,6 +103,25 @@ class EventDashboardController extends AbstractController
             $event->setOrganiserUuid($organiserUuid);
             $event->setIsActive($request->request->getBoolean('is_active', true));
 
+            // Set GPS coordinates
+            $latitude = $request->request->get('latitude');
+            $longitude = $request->request->get('longitude');
+            if ($latitude !== null && $latitude !== '') {
+                $event->setLatitude((float)$latitude);
+            }
+            if ($longitude !== null && $longitude !== '') {
+                $event->setLongitude((float)$longitude);
+            }
+
+            // Set event type
+            $eventTypeId = $request->request->get('event_type_id');
+            if ($eventTypeId) {
+                $eventType = $this->eventTypeRepository->find($eventTypeId);
+                if ($eventType) {
+                    $event->setEventType($eventType);
+                }
+            }
+
             $this->em->persist($event);
             $this->em->flush();
 
@@ -149,6 +170,29 @@ class EventDashboardController extends AbstractController
             $event->setLocation($request->request->get('location', 'online'));
             $event->setOrganiserUuid($request->request->get('organiser_uuid') ?: $event->getOrganiserUuid());
             $event->setIsActive($request->request->getBoolean('is_active', true));
+
+            // Update GPS coordinates
+            $latitude = $request->request->get('latitude');
+            $longitude = $request->request->get('longitude');
+            if ($latitude !== null && $latitude !== '') {
+                $event->setLatitude((float)$latitude);
+            } else {
+                $event->setLatitude(null);
+            }
+            if ($longitude !== null && $longitude !== '') {
+                $event->setLongitude((float)$longitude);
+            } else {
+                $event->setLongitude(null);
+            }
+
+            // Update event type
+            $eventTypeId = $request->request->get('event_type_id');
+            if ($eventTypeId) {
+                $eventType = $this->eventTypeRepository->find($eventTypeId);
+                $event->setEventType($eventType);
+            } else {
+                $event->setEventType(null);
+            }
 
             $this->em->flush();
             $this->addFlash('success', 'Événement mis à jour.');
