@@ -17,6 +17,10 @@ class HarvardArtMuseumsService
 
     public function getArtworks(int $page = 1, int $size = 10): array
     {
+        if ($this->apiKey === 'your_api_key_here' || empty($this->apiKey)) {
+            return ['records' => []];
+        }
+
         $response = $this->client->request('GET', 'https://api.harvardartmuseums.org/object', [
             'query' => [
                 'apikey' => $this->apiKey,

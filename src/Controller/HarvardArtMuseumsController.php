@@ -7,9 +7,12 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+
+#[IsGranted('ROLE_ADMIN')]
 class HarvardArtMuseumsController extends AbstractController
 {
-    #[Route('/harvard-artworks', name: 'app_harvard_artworks')]
+    #[Route('/admin/harvard-artworks', name: 'app_harvard_artworks')]
     public function index(HarvardArtMuseumsService $harvardArtMuseumsService): Response
     {
         $artworks = $harvardArtMuseumsService->getArtworks();
