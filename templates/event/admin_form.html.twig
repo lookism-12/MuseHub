@@ -83,6 +83,22 @@
                         <label class="form-check-label" for="isActiveEvent">Événement actif</label>
                     </div>
                 </div>
+                <div class="col-md-6">
+                    <label class="form-label">Latitude <i class="fas fa-map-marker-alt text-muted"></i></label>
+                    <input type="number" name="latitude" class="form-control" 
+                        value="{{ event.latitude }}" 
+                        step="0.000001" 
+                        placeholder="Ex: 48.8566">
+                    <small class="text-muted">Coordonnée GPS latitude (ex: 48.8566 pour Paris)</small>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Longitude <i class="fas fa-globe text-muted"></i></label>
+                    <input type="number" name="longitude" class="form-control" 
+                        value="{{ event.longitude }}" 
+                        step="0.000001" 
+                        placeholder="Ex: 2.3522">
+                    <small class="text-muted">Coordonnée GPS longitude (ex: 2.3522 pour Paris)</small>
+                </div>
             </div>
             <div class="d-flex justify-content-end gap-3 mt-4">
                 <a href="{{ path('admin_events_list') }}" class="btn btn-outline-secondary">Annuler</a>
@@ -114,5 +130,3 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock %}
-
-

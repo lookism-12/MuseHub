@@ -30,6 +30,7 @@ class EventDashboardController extends AbstractController
     {
         $statusFilter = $request->query->get('status', 'all');
         $search = trim((string)$request->query->get('q', ''));
+        $sortBy = $request->query->get('sort', 'date_desc'); // Nouveau paramètre de tri
 
         $qb = $this->eventRepository->createQueryBuilder('e');
 
@@ -49,7 +50,20 @@ class EventDashboardController extends AbstractController
                 ->setParameter('search', '%' . strtolower($search) . '%');
         }
 
-        $events = $qb->orderBy('e.dateTime', 'DESC')->getQuery()->getResult();
+        // Appliquer le tri selon le paramètre
+        match($sortBy) {
+            'id_asc' => $qb->orderBy('e.id', 'ASC'),
+            'id_desc' => $qb->orderBy('e.id', 'DESC'),
+            'date_asc' => $qb->orderBy('e.dateTime', 'ASC'),
+            'date_desc' => $qb->orderBy('e.dateTime', 'DESC'),
+            'title_asc' => $qb->orderBy('e.title', 'ASC'),
+            'title_desc' => $qb->orderBy('e.title', 'DESC'),
+            'created_asc' => $qb->orderBy('e.createdAt', 'ASC'),
+            'created_desc' => $qb->orderBy('e.createdAt', 'DESC'),
+            default => $qb->orderBy('e.dateTime', 'DESC')
+        };
+
+        $events = $qb->getQuery()->getResult();
 
         $upcoming = $this->eventRepository->findUpcoming();
         $all = $this->eventRepository->findAll();
@@ -66,6 +80,7 @@ class EventDashboardController extends AbstractController
             'stats' => $stats,
             'statusFilter' => $statusFilter,
             'search' => $search,
+            'sortBy' => $sortBy,
         ]);
     }
 
@@ -102,6 +117,16 @@ class EventDashboardController extends AbstractController
             $event->setLocation($location);
             $event->setOrganiserUuid($organiserUuid);
             $event->setIsActive($request->request->getBoolean('is_active', true));
+
+            // Set GPS coordinates
+            $latitude = $request->request->get('latitude');
+            $longitude = $request->request->get('longitude');
+            if ($latitude !== null && $latitude !== '') {
+                $event->setLatitude((float)$latitude);
+            }
+            if ($longitude !== null && $longitude !== '') {
+                $event->setLongitude((float)$longitude);
+            }
 
             // Set event type
             $eventTypeId = $request->request->get('event_type_id');
@@ -163,6 +188,20 @@ class EventDashboardController extends AbstractController
             $event->setLocation($request->request->get('location', 'online'));
             $event->setOrganiserUuid($request->request->get('organiser_uuid') ?: $event->getOrganiserUuid());
             $event->setIsActive($request->request->getBoolean('is_active', true));
+
+            // Update GPS coordinates
+            $latitude = $request->request->get('latitude');
+            $longitude = $request->request->get('longitude');
+            if ($latitude !== null && $latitude !== '') {
+                $event->setLatitude((float)$latitude);
+            } else {
+                $event->setLatitude(null);
+            }
+            if ($longitude !== null && $longitude !== '') {
+                $event->setLongitude((float)$longitude);
+            } else {
+                $event->setLongitude(null);
+            }
 
             // Update event type
             $eventTypeId = $request->request->get('event_type_id');
@@ -226,4 +265,3 @@ class EventDashboardController extends AbstractController
         ]);
     }
 }
-
