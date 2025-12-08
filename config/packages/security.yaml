@@ -4,19 +4,14 @@ security:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
-<<<<<<< HEAD
         app_user_provider:
             entity:
                 class: App\Entity\User
                 property: email
-=======
-        users_in_memory: { memory: null }
->>>>>>> 776eda0bf4e6f00382b836d54d37240960c5e114
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
-<<<<<<< HEAD
         api:
             pattern: ^/api
             lazy: true
@@ -35,22 +30,10 @@ security:
             logout:
                 path: logout
                 target: home
-=======
-        main:
-            lazy: true
-            provider: users_in_memory
-
-            # activate different ways to authenticate
-            # https://symfony.com/doc/current/security.html#the-firewall
-
-            # https://symfony.com/doc/current/security/impersonating_user.html
-            # switch_user: true
->>>>>>> 776eda0bf4e6f00382b836d54d37240960c5e114
 
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-<<<<<<< HEAD
         # Routes publiques - Client peut tout voir
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/logout, roles: PUBLIC_ACCESS }
@@ -75,10 +58,6 @@ security:
         # Routes protégées - Création/modification nécessite authentification
         - { path: ^/api/artworks, methods: [POST, PUT, DELETE], roles: ROLE_USER }
         - { path: ^/api/posts, methods: [POST, PUT, DELETE], roles: ROLE_USER }
-=======
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
->>>>>>> 776eda0bf4e6f00382b836d54d37240960c5e114
 
 when@test:
     security:
