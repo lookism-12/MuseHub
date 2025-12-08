@@ -43,22 +43,6 @@
                         required>
                 </div>
                 <div class="col-12">
-                    <label class="form-label">Type d'événement</label>
-                    <select name="event_type_id" class="form-select" id="eventTypeSelect">
-                        <option value="">-- Aucun type --</option>
-                        {% for type in eventTypes %}
-                            <option value="{{ type.id }}" 
-                                    {{ event.eventType and event.eventType.id == type.id ? 'selected' : '' }}
-                                    data-description="{{ type.description }}">
-                                {{ type.name }}
-                                {% if type.requiresPayment %}💰{% endif %}
-                                {% if type.certificateEnabled %}🎓{% endif %}
-                            </option>
-                        {% endfor %}
-                    </select>
-                    <small class="text-muted" id="typeDescription"></small>
-                </div>
-                <div class="col-12">
                     <label class="form-label">Description</label>
                     <textarea name="description" rows="4" class="form-control">{{ event.description }}</textarea>
                 </div>
@@ -83,22 +67,6 @@
                         <label class="form-check-label" for="isActiveEvent">Événement actif</label>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label">Latitude <i class="fas fa-map-marker-alt text-muted"></i></label>
-                    <input type="number" name="latitude" class="form-control" 
-                        value="{{ event.latitude }}" 
-                        step="0.000001" 
-                        placeholder="Ex: 48.8566">
-                    <small class="text-muted">Coordonnée GPS latitude (ex: 48.8566 pour Paris)</small>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Longitude <i class="fas fa-globe text-muted"></i></label>
-                    <input type="number" name="longitude" class="form-control" 
-                        value="{{ event.longitude }}" 
-                        step="0.000001" 
-                        placeholder="Ex: 2.3522">
-                    <small class="text-muted">Coordonnée GPS longitude (ex: 2.3522 pour Paris)</small>
-                </div>
             </div>
             <div class="d-flex justify-content-end gap-3 mt-4">
                 <a href="{{ path('admin_events_list') }}" class="btn btn-outline-secondary">Annuler</a>
@@ -109,24 +77,6 @@
         </form>
     </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const eventTypeSelect = document.getElementById('eventTypeSelect');
-    const typeDescription = document.getElementById('typeDescription');
-    
-    function updateTypeDescription() {
-        const selectedOption = eventTypeSelect.options[eventTypeSelect.selectedIndex];
-        if (selectedOption.value && selectedOption.dataset.description) {
-            typeDescription.textContent = selectedOption.dataset.description;
-            typeDescription.style.color = selectedOption.dataset.color || '#6b7280';
-        } else {
-            typeDescription.textContent = '';
-        }
-    }
-    
-    eventTypeSelect.addEventListener('change', updateTypeDescription);
-    updateTypeDescription();
-});
-</script>
 {% endblock %}
+
+

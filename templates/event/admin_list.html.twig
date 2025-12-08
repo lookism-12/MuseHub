@@ -80,7 +80,6 @@
                     <tr>
                         <th>ID</th>
                         <th>Titre</th>
-                        <th>Type</th>
                         <th>Date</th>
                         <th>Lieu</th>
                         <th>Organisateur</th>
@@ -93,15 +92,6 @@
                     <tr>
                         <td>{{ event.id }}</td>
                         <td><strong>{{ event.title }}</strong></td>
-                        <td>
-                            {% if event.eventType %}
-                                <span class="badge bg-secondary">
-                                    {{ event.eventType.name }}
-                                </span>
-                            {% else %}
-                                <span class="text-muted">-</span>
-                            {% endif %}
-                        </td>
                         <td>{{ event.dateTime|date('d/m/Y H:i') }}</td>
                         <td>
                             <span class="badge bg-{{ event.location == 'online' ? 'success' : 'info' }}">
@@ -135,7 +125,7 @@
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="8" class="text-center py-4">
+                        <td colspan="7" class="text-center py-4">
                             <i class="fas fa-calendar fa-2x text-muted mb-2"></i>
                             <p class="text-muted">Aucun événement trouvé</p>
                         </td>

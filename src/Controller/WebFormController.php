@@ -17,6 +17,7 @@ use App\Repository\ParticipantRepository;
 use App\Repository\PostRepository;
 use App\Repository\CommentRepository;
 use App\Service\ContentFilter;
+use App\Service\CommentModerationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -35,7 +36,8 @@ class WebFormController extends AbstractController
         private OffreRepository $offreRepository,
         private EventRepository $eventRepository,
         private ParticipantRepository $participantRepository,
-        private ContentFilter $contentFilter
+        private ContentFilter $contentFilter,
+        private CommentModerationService $moderationService
     ) {
     }
 
@@ -43,13 +45,13 @@ class WebFormController extends AbstractController
     public function createArtwork(Request $request): Response
     {
         $user = $this->getUser();
-        
+
         // Check if user has ROLE_ARTIST or ROLE_ADMIN
         if (!$user || (!in_array('ROLE_ARTIST', $user->getRoles()) && !in_array('ROLE_ADMIN', $user->getRoles()))) {
             $this->addFlash('error', 'Vous devez être artiste pour créer une œuvre.');
             return $this->redirectToRoute('artworks');
         }
-        
+
         $title = $request->request->get('title');
         if (!$title) {
             $this->addFlash('error', 'Le titre est requis');
@@ -59,11 +61,11 @@ class WebFormController extends AbstractController
         $artwork = new Artwork();
         $artwork->setTitle($title);
         $artwork->setDescription($request->request->get('description') ?: null);
-        
+
         // Handle file upload
         $imageUrl = null;
         $uploadedFile = $request->files->get('image_file');
-        
+
         if ($uploadedFile && $uploadedFile->isValid()) {
             // Validate file type
             $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
@@ -71,24 +73,24 @@ class WebFormController extends AbstractController
                 $this->addFlash('error', 'Format d\'image non supporté. Utilisez JPG, PNG, GIF ou WEBP.');
                 return $this->redirectToRoute('artworks');
             }
-            
+
             // Validate file size (5MB max)
             if ($uploadedFile->getSize() > 5 * 1024 * 1024) {
                 $this->addFlash('error', 'L\'image est trop volumineuse. Taille maximum: 5MB.');
                 return $this->redirectToRoute('artworks');
             }
-            
+
             // Generate unique filename
             $originalFilename = pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME);
             $extension = $uploadedFile->guessExtension();
             $newFilename = $originalFilename . '_' . uniqid() . '.' . $extension;
-            
+
             // Move file to uploads directory
             $uploadsDir = $this->getParameter('kernel.project_dir') . '/public/uploads/artworks';
             if (!is_dir($uploadsDir)) {
                 mkdir($uploadsDir, 0755, true);
             }
-            
+
             try {
                 $uploadedFile->move($uploadsDir, $newFilename);
                 $imageUrl = '/uploads/artworks/' . $newFilename;
@@ -100,16 +102,16 @@ class WebFormController extends AbstractController
             // Use URL if provided and no file uploaded
             $imageUrl = $request->request->get('image_url');
         }
-        
+
         $artwork->setImageUrl($imageUrl);
         $price = $request->request->get('price');
-        $artwork->setPrice($price ? (float)$price : null);
+        $artwork->setPrice($price ? (float) $price : null);
         $artwork->setArtistUuid($user->getUuid());
         $artwork->setStatus($request->request->get('status') ?: 'visible');
 
         $categoryId = $request->request->get('category_id');
         if ($categoryId && $categoryId !== '') {
-            $category = $this->categoryRepository->find((int)$categoryId);
+            $category = $this->categoryRepository->find((int) $categoryId);
             if ($category) {
                 $artwork->setCategory($category);
             }
@@ -134,7 +136,7 @@ class WebFormController extends AbstractController
             return $this->redirectToRoute('events');
         }
 
-        if (!$this->isCsrfTokenValid('subscribe_event_' . $id, (string)$request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid('subscribe_event_' . $id, (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'Jeton CSRF invalide.');
             return $this->redirectToRoute('events');
         }
@@ -168,7 +170,7 @@ class WebFormController extends AbstractController
             return $this->redirectToRoute('events');
         }
 
-        if (!$this->isCsrfTokenValid('unsubscribe_event_' . $id, (string)$request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid('unsubscribe_event_' . $id, (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'Jeton CSRF invalide.');
             return $this->redirectToRoute('events');
         }
@@ -208,7 +210,7 @@ class WebFormController extends AbstractController
         }
 
         $artistUuid = substr($artworkUuid, 0, $separatorPos);
-        $artworkId = (int)substr($artworkUuid, $separatorPos + 1);
+        $artworkId = (int) substr($artworkUuid, $separatorPos + 1);
 
         if (!$artistUuid || !$artworkId) {
             $this->addFlash('error', 'Référence d\'œuvre invalide');
@@ -216,7 +218,7 @@ class WebFormController extends AbstractController
         }
 
         $artwork = $this->artworkRepository->find($artworkId);
-        
+
         // Verify artwork exists and belongs to user
         if (!$artwork || $artwork->getArtistUuid() !== $artistUuid || $artwork->getArtistUuid() !== $this->getUser()->getUuid()) {
             $this->addFlash('error', 'Œuvre non trouvée ou non autorisée');
@@ -228,8 +230,8 @@ class WebFormController extends AbstractController
 
         $listing = new Listing();
         $listing->setArtworkUuid($listingArtworkUuid);
-        $listing->setPrice((float)$price);
-        $listing->setStock((int)($request->request->get('stock') ?: 1));
+        $listing->setPrice((float) $price);
+        $listing->setStock((int) ($request->request->get('stock') ?: 1));
         $listing->setStatus('available');
 
         $this->em->persist($listing);
@@ -255,6 +257,16 @@ class WebFormController extends AbstractController
         $filterResult = $this->contentFilter->filterContent($content);
         if (!$filterResult['isValid']) {
             $this->addFlash('error', 'Le contenu n\'est pas valide: ' . implode(', ', $filterResult['issues']));
+            return $this->redirectToRoute('community');
+        }
+
+        // Check toxicity with Perspective API (applies to everyone, including admins)
+        $toxicityCheck = $this->moderationService->checkToxicity($content);
+        if ($toxicityCheck['isToxic']) {
+            $this->addFlash('error', sprintf(
+                'Votre publication a été détectée comme potentiellement toxique (score: %.2f). Veuillez reformuler votre message de manière plus respectueuse.',
+                $toxicityCheck['score']
+            ));
             return $this->redirectToRoute('community');
         }
 
@@ -316,7 +328,7 @@ class WebFormController extends AbstractController
             return $this->redirectToRoute('community');
         }
 
-        if (!$this->isCsrfTokenValid('update_post_' . $post->getId(), (string)$request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid('update_post_' . $post->getId(), (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'Le formulaire a expiré, merci de réessayer.');
             return $this->redirectToRoute('community', ['_fragment' => 'post-' . $post->getId()]);
         }
@@ -327,7 +339,7 @@ class WebFormController extends AbstractController
             return $this->redirectToRoute('community', ['_fragment' => 'post-' . $post->getId()]);
         }
 
-        $content = trim((string)$request->request->get('content'));
+        $content = trim((string) $request->request->get('content'));
         if ($content === '') {
             $this->addFlash('error', 'Le contenu ne peut pas être vide.');
             return $this->redirectToRoute('community', ['_fragment' => 'post-' . $post->getId()]);
@@ -335,7 +347,17 @@ class WebFormController extends AbstractController
 
         $filterResult = $this->contentFilter->filterContent($content);
         if (!$filterResult['isValid']) {
-            $this->addFlash('error', 'Le contenu n’est pas valide : ' . implode(', ', $filterResult['issues']));
+            $this->addFlash('error', 'Le contenu n\'est pas valide : ' . implode(', ', $filterResult['issues']));
+            return $this->redirectToRoute('community', ['_fragment' => 'post-' . $post->getId()]);
+        }
+
+        // Check toxicity with Perspective API (applies to everyone, including admins)
+        $toxicityCheck = $this->moderationService->checkToxicity($content);
+        if ($toxicityCheck['isToxic']) {
+            $this->addFlash('error', sprintf(
+                'Votre publication a été détectée comme potentiellement toxique (score: %.2f). Veuillez reformuler votre message de manière plus respectueuse.',
+                $toxicityCheck['score']
+            ));
             return $this->redirectToRoute('community', ['_fragment' => 'post-' . $post->getId()]);
         }
 
@@ -374,7 +396,7 @@ class WebFormController extends AbstractController
                 return $this->redirectToRoute('community', ['_fragment' => 'post-' . $post->getId()]);
             }
         } elseif ($request->request->has('image_url')) {
-            $providedUrl = trim((string)$request->request->get('image_url'));
+            $providedUrl = trim((string) $request->request->get('image_url'));
             $imageUrl = $providedUrl !== '' ? $providedUrl : $imageUrl;
         }
 
@@ -400,7 +422,7 @@ class WebFormController extends AbstractController
             return $this->redirectToRoute('community');
         }
 
-        if (!$this->isCsrfTokenValid('delete_post_' . $post->getId(), (string)$request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid('delete_post_' . $post->getId(), (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'Le formulaire a expiré, merci de réessayer.');
             return $this->redirectToRoute('community', ['_fragment' => 'post-' . $post->getId()]);
         }
@@ -427,12 +449,12 @@ class WebFormController extends AbstractController
             return $this->redirectToRoute('community');
         }
 
-        if (!$this->isCsrfTokenValid('comment_post_' . $post->getId(), (string)$request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid('comment_post_' . $post->getId(), (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'Le formulaire a expiré, merci de réessayer.');
             return $this->redirectToRoute('community', ['_fragment' => 'post-' . $post->getId()]);
         }
 
-        $content = trim((string)$request->request->get('content'));
+        $content = trim((string) $request->request->get('content'));
         if ($content === '') {
             $this->addFlash('error', 'Le commentaire ne peut pas être vide.');
             return $this->redirectToRoute('community', ['_fragment' => 'post-' . $post->getId()]);
@@ -444,6 +466,16 @@ class WebFormController extends AbstractController
             return $this->redirectToRoute('community', ['_fragment' => 'post-' . $post->getId()]);
         }
 
+        // Check toxicity with Perspective API
+        $toxicityCheck = $this->moderationService->checkToxicity($content);
+        if ($toxicityCheck['isToxic']) {
+            $this->addFlash('error', sprintf(
+                'Votre commentaire a été détecté comme potentiellement toxique (score: %.2f). Veuillez reformuler votre message de manière plus respectueuse.',
+                $toxicityCheck['score']
+            ));
+            return $this->redirectToRoute('community', ['_fragment' => 'post-' . $post->getId()]);
+        }
+
         $comment = new Comment();
         $comment->setPost($post);
         $comment->setContent($filterResult['filteredContent']);
@@ -452,7 +484,7 @@ class WebFormController extends AbstractController
         if ($user) {
             $comment->setCommenterUuid($user->getUuid());
         } else {
-            $displayName = trim((string)$request->request->get('commenter_name'));
+            $displayName = trim((string) $request->request->get('commenter_name'));
             if ($displayName !== '') {
                 $normalizedName = preg_replace('/[^a-z0-9]+/i', '_', $displayName);
                 $comment->setCommenterUuid('guest_' . strtolower(trim($normalizedName, '_')) . '_' . uniqid());
@@ -485,7 +517,7 @@ class WebFormController extends AbstractController
             return $this->redirectToRoute('community', ['_fragment' => 'post-' . $post->getId()]);
         }
 
-        if (!$this->isCsrfTokenValid('update_comment_' . $comment->getId(), (string)$request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid('update_comment_' . $comment->getId(), (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'Le formulaire a expiré, merci de réessayer.');
             return $this->redirectToRoute('community', ['_fragment' => 'post-' . $post->getId()]);
         }
@@ -496,7 +528,7 @@ class WebFormController extends AbstractController
             return $this->redirectToRoute('community', ['_fragment' => 'post-' . $post->getId()]);
         }
 
-        $content = trim((string)$request->request->get('content'));
+        $content = trim((string) $request->request->get('content'));
         if ($content === '') {
             $this->addFlash('error', 'Le commentaire ne peut pas être vide.');
             return $this->redirectToRoute('community', ['_fragment' => 'post-' . $post->getId()]);
@@ -505,6 +537,16 @@ class WebFormController extends AbstractController
         $filterResult = $this->contentFilter->filterContent($content);
         if (!$filterResult['isValid']) {
             $this->addFlash('error', 'Votre commentaire a été bloqué: ' . implode(', ', $filterResult['issues']));
+            return $this->redirectToRoute('community', ['_fragment' => 'post-' . $post->getId()]);
+        }
+
+        // Check toxicity with Perspective API (applies to everyone, including admins)
+        $toxicityCheck = $this->moderationService->checkToxicity($content);
+        if ($toxicityCheck['isToxic']) {
+            $this->addFlash('error', sprintf(
+                'Votre commentaire a été détecté comme potentiellement toxique (score: %.2f). Veuillez reformuler votre message de manière plus respectueuse.',
+                $toxicityCheck['score']
+            ));
             return $this->redirectToRoute('community', ['_fragment' => 'post-' . $post->getId()]);
         }
 
@@ -531,7 +573,7 @@ class WebFormController extends AbstractController
             return $this->redirectToRoute('community', ['_fragment' => 'post-' . $post->getId()]);
         }
 
-        if (!$this->isCsrfTokenValid('delete_comment_' . $comment->getId(), (string)$request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid('delete_comment_' . $comment->getId(), (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'Le formulaire a expiré, merci de réessayer.');
             return $this->redirectToRoute('community', ['_fragment' => 'post-' . $post->getId()]);
         }
@@ -577,7 +619,7 @@ class WebFormController extends AbstractController
         $offre = new Offre();
         $offre->setListing($listing);
         $offre->setUtilisateur($user);
-        $offre->setPrixPropose((string)$prixPropose);
+        $offre->setPrixPropose((string) $prixPropose);
         $offre->setStatut('En attente');
         if ($commentaire) {
             $offre->setCommentaire($commentaire);

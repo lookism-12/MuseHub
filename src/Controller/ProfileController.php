@@ -7,6 +7,7 @@ use App\Entity\Comment;
 use App\Entity\Post;
 use App\Entity\User;
 use App\Form\ProfileType;
+use App\Service\ImageUploadService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -15,6 +16,7 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\String\Slugger\SluggerInterface;
@@ -26,7 +28,8 @@ class ProfileController extends AbstractController
     public function __construct(
         private EntityManagerInterface $entityManager,
         private ParameterBagInterface $parameterBag,
-        private SluggerInterface $slugger
+        private SluggerInterface $slugger,
+        private ImageUploadService $imageUploadService
     ) {
     }
 
@@ -47,7 +50,7 @@ class ProfileController extends AbstractController
             $avatarFile = $form->get('avatar')->getData();
 
             if ($avatarFile instanceof UploadedFile) {
-                $uploadDir = (string)$this->parameterBag->get('app.user_avatar_directory');
+                $uploadDir = (string) $this->parameterBag->get('app.user_avatar_directory');
                 $filesystem = new Filesystem();
 
                 if (!$filesystem->exists($uploadDir)) {
@@ -55,7 +58,7 @@ class ProfileController extends AbstractController
                 }
 
                 $originalName = pathinfo($avatarFile->getClientOriginalName(), PATHINFO_FILENAME) ?: 'avatar';
-                $safeFilename = (string)$this->slugger->slug($originalName);
+                $safeFilename = (string) $this->slugger->slug($originalName);
                 $extension = $avatarFile->guessExtension() ?: $avatarFile->getClientOriginalExtension() ?: 'bin';
                 $newFilename = sprintf('%s-%s.%s', $safeFilename, uniqid('', true), $extension);
 
@@ -95,6 +98,34 @@ class ProfileController extends AbstractController
             'form' => $form->createView(),
             'stats' => $stats,
         ]);
+    }
+
+    #[Route('/api/avatar', name: 'api_upload_avatar', methods: ['POST'])]
+    public function uploadAvatar(Request $request): JsonResponse
+    {
+        $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            return $this->json(['error' => 'User not authenticated'], 401);
+        }
+
+        $file = $request->files->get('avatar');
+        if (!$file) {
+            return $this->json(['error' => 'No avatar file provided'], 400);
+        }
+
+        try {
+            $avatarUrl = $this->imageUploadService->uploadAvatar($file);
+            $user->setAvatarUrl($avatarUrl);
+            $this->entityManager->flush();
+
+            return $this->json([
+                'message' => 'Avatar uploaded successfully',
+                'avatar_url' => $avatarUrl,
+            ]);
+        } catch (\Exception $e) {
+            return $this->json(['error' => $e->getMessage()], 400);
+        }
     }
 }
 

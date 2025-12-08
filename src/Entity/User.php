@@ -49,6 +49,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $passwordResetRequestedAt = null;
 
+    #[ORM\Column(type: 'integer')]
+    private int $reputation = 0;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -196,6 +199,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function eraseCredentials(): void
     {
         // No temporary sensitive data stored on the user.
+    }
+
+    public function getReputation(): int
+    {
+        return $this->reputation;
+    }
+
+    public function setReputation(int $reputation): self
+    {
+        $this->reputation = max(0, $reputation);
+        return $this;
+    }
+
+    public function addReputation(int $points): self
+    {
+        $this->reputation += $points;
+        return $this;
     }
 
     private function generateUuid(): string
