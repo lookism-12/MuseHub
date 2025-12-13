@@ -21,9 +21,51 @@ class ArtworkApiController extends AbstractController
     public function __construct(
         private ArtworkRepository $artworkRepository,
         private CategoryRepository $categoryRepository,
+        private \App\Repository\ArtworkLikeRepository $artworkLikeRepository,
         private EntityManagerInterface $em,
         private ImageResizer $imageResizer
     ) {
+    }
+
+    #[Route('/{id}/like', name: 'api_artworks_like', methods: ['POST'])]
+    public function like(int $id): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return new JsonResponse(['error' => 'Login required'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $artwork = $this->artworkRepository->find($id);
+        if (!$artwork) {
+            return new JsonResponse(['error' => 'Artwork not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        $existingLike = $this->artworkLikeRepository->findOneByUserAndArtwork($user->getUuid(), $id);
+
+        if ($existingLike) {
+            // Unlike
+            $this->em->remove($existingLike);
+            $artwork->decrementLikesCount();
+            $message = 'Unliked';
+            $liked = false;
+        } else {
+            // Like
+            $like = new \App\Entity\ArtworkLike();
+            $like->setUser($user);
+            $like->setArtwork($artwork);
+            $this->em->persist($like);
+            $artwork->incrementLikesCount();
+            $message = 'Liked';
+            $liked = true;
+        }
+
+        $this->em->flush();
+
+        return new JsonResponse([
+            'message' => $message,
+            'likes_count' => $artwork->getLikesCount(),
+            'liked' => $liked
+        ]);
     }
 
     #[Route('', name: 'api_artworks_list', methods: ['GET'])]

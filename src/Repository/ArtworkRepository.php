@@ -45,4 +45,47 @@ class ArtworkRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+    public function findAllWithFilters(array $filters)
+    {
+        $qb = $this->createQueryBuilder('a')
+            ->where('a.status = :status')
+            ->setParameter('status', 'visible');
+
+        if (!empty($filters['category'])) {
+            $qb->join('a.category', 'c')
+               ->andWhere('c.name = :category')
+               ->setParameter('category', $filters['category']);
+        }
+
+        if (!empty($filters['min_price'])) {
+            $qb->andWhere('a.price >= :minPrice')
+               ->setParameter('minPrice', $filters['min_price']);
+        }
+
+        if (!empty($filters['max_price'])) {
+            $qb->andWhere('a.price <= :maxPrice')
+               ->setParameter('maxPrice', $filters['max_price']);
+        }
+
+        $sort = $filters['sort'] ?? 'newest';
+        $direction = strtoupper($filters['direction'] ?? 'DESC');
+        if (!in_array($direction, ['ASC', 'DESC'])) {
+            $direction = 'DESC';
+        }
+
+        switch ($sort) {
+            case 'price':
+                $qb->orderBy('a.price', $direction);
+                break;
+            case 'likes':
+                $qb->orderBy('a.likesCount', $direction);
+                break;
+            case 'newest':
+            default:
+                $qb->orderBy('a.id', $direction);
+                break;
+        }
+
+        return $qb->getQuery()->getResult();
+    }
 }

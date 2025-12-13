@@ -89,17 +89,23 @@ class FrontOfficeController extends AbstractController
     }
 
     #[Route('/artworks', name: 'artworks')]
-    public function artworks(): Response
+    public function artworks(Request $request): Response
     {
-        $artworks = $this->artworkRepository->findBy(
-            ['status' => 'visible'],
-            ['id' => 'DESC']
-        );
+        $filters = [
+            'category' => $request->query->get('category'),
+            'min_price' => $request->query->get('min_price'),
+            'max_price' => $request->query->get('max_price'),
+            'sort' => $request->query->get('sort'),
+            'direction' => $request->query->get('direction'),
+        ];
+
+        $artworks = $this->artworkRepository->findAllWithFilters($filters);
         $categories = $this->categoryRepository->findAll();
 
         return $this->render('front/artworks.html.twig', [
             'artworks' => $artworks,
             'categories' => $categories,
+            'filters' => $filters,
         ]);
     }
 

@@ -30,7 +30,7 @@ class PasswordResetController extends AbstractController
 
 
     /* ============================================================
-            1️⃣  REQUEST PASSWORD RESET (send email)
+            REQUEST PASSWORD RESET (send email)
        ============================================================ */
     #[Route('/forgot-password', name: 'api_auth_forgot_password', methods: ['POST'])]
     public function forgotPassword(Request $request): JsonResponse
@@ -131,7 +131,7 @@ class PasswordResetController extends AbstractController
 
 
     /* ============================================================
-            2️⃣  RESET PASSWORD WITH TOKEN
+            RESET PASSWORD WITH TOKEN
        ============================================================ */
     #[Route('/reset-password', name: 'api_auth_reset_password', methods: ['POST'])]
     public function resetPassword(Request $request): JsonResponse

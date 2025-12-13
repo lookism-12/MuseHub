@@ -23,17 +23,7 @@ class PasswordResetWebController extends AbstractController
         private UrlGeneratorInterface $urlGenerator
     ) {
     }
-
-    /**
-     * -------------------------------------------------------------------------
-     * PAGE : Mot de passe oublié
-     * -------------------------------------------------------------------------
-     * Corrections apportées :
-     * 1️⃣ Envoi email → adresse dynamique ($user->getEmail())
-     * 2️⃣ Utilisation d’un paramètre mailer_from (propre et configurable)
-     * 3️⃣ Ajout de logs et affichage du lien en DEV si le mail échoue
-     * 4️⃣ Vérification token vide + gestion propre des erreurs
-     */
+    
     #[Route('/forgot-password', name: 'password_forgot', methods: ['GET', 'POST'])]
     public function forgotPassword(Request $request): Response
     {

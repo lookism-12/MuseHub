@@ -35,6 +35,70 @@ class Artwork
     #[ORM\JoinColumn(nullable: true)]
     private ?Category $category = null;
 
+    #[ORM\Column(type: 'integer')]
+    private int $likesCount = 0;
+
+    #[ORM\OneToMany(mappedBy: 'artwork', targetEntity: ArtworkLike::class, orphanRemoval: true)]
+    private $likes;
+
+    public function __construct()
+    {
+        $this->likes = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->status = 'visible';
+    }
+
+    public function getLikesCount(): ?int
+    {
+        return $this->likesCount;
+    }
+
+    public function setLikesCount(int $likesCount): self
+    {
+        $this->likesCount = $likesCount;
+        return $this;
+    }
+
+    public function incrementLikesCount(): self
+    {
+        $this->likesCount++;
+        return $this;
+    }
+
+    public function decrementLikesCount(): self
+    {
+        $this->likesCount = max(0, $this->likesCount - 1);
+        return $this;
+    }
+
+    /**
+     * @return \Doctrine\Common\Collections\Collection<int, ArtworkLike>
+     */
+    public function getLikes(): \Doctrine\Common\Collections\Collection
+    {
+        return $this->likes;
+    }
+
+    public function addLike(ArtworkLike $like): self
+    {
+        if (!$this->likes->contains($like)) {
+            $this->likes->add($like);
+            $like->setArtwork($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLike(ArtworkLike $like): self
+    {
+        if ($this->likes->removeElement($like)) {
+            // set the owning side to null (unless already changed)
+            if ($like->getArtwork() === $this) {
+                $like->setArtwork(null);
+            }
+        }
+
+        return $this;
+    }
     public function getId(): ?int
     {
         return $this->id;

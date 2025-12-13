@@ -64,6 +64,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->uuid = $this->generateUuid();
         $this->roles = ['ROLE_USER'];
         $this->isActive = true;
+        $this->artworkLikes = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
     public function getId(): ?int
@@ -259,6 +260,39 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function restore(): self
     {
         $this->deletedAt = null;
+        return $this;
+    }
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: ArtworkLike::class, orphanRemoval: true)]
+    private $artworkLikes;
+
+    /**
+     * @return \Doctrine\Common\Collections\Collection<int, ArtworkLike>
+     */
+    public function getArtworkLikes(): \Doctrine\Common\Collections\Collection
+    {
+        return $this->artworkLikes;
+    }
+
+    public function addArtworkLike(ArtworkLike $artworkLike): self
+    {
+        if (!$this->artworkLikes->contains($artworkLike)) {
+            $this->artworkLikes->add($artworkLike);
+            $artworkLike->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeArtworkLike(ArtworkLike $artworkLike): self
+    {
+        if ($this->artworkLikes->removeElement($artworkLike)) {
+            // set the owning side to null (unless already changed)
+            if ($artworkLike->getUser() === $this) {
+                $artworkLike->setUser(null);
+            }
+        }
+
         return $this;
     }
 

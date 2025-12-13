@@ -126,50 +126,125 @@
     </div>
     {% endif %}
 
-    <div class="row g-4">
-        {% for artwork in artworks %}
-        <div class="col-md-6 col-lg-4">
-            <div class="card h-100">
-                {% if artwork.imageUrl %}
-                    <img src="{{ artwork.imageUrl }}" alt="{{ artwork.title }}" class="artwork-image">
-                {% else %}
-                    <div class="artwork-image bg-secondary d-flex align-items-center justify-content-center text-white">
-                        <i class="fas fa-image fa-3x"></i>
-                    </div>
-                {% endif %}
+    <div class="row">
+        <!-- Sidebar Filters -->
+        <div class="col-lg-3 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filtres</h5>
+                </div>
                 <div class="card-body">
-                    <h5 class="card-title">{{ artwork.title }}</h5>
-                    <p class="text-muted small mb-2">
-                        {% if artwork.category %}
-                            <span class="badge bg-info">{{ artwork.category.name }}</span>
-                        {% endif %}
-                        <span class="badge bg-{{ artwork.status == 'visible' ? 'success' : 'secondary' }}">
-                            {{ artwork.status }}
-                        </span>
-                    </p>
-                    {% if artwork.description %}
-                        <p class="card-text">{{ artwork.description|slice(0, 150) }}{% if artwork.description|length > 150 %}...{% endif %}</p>
-                    {% endif %}
-                    <div class="d-flex justify-content-between align-items-center mt-3">
-                        {% if artwork.price %}
-                            <span class="text-primary fw-bold fs-5">{{ artwork.price }} €</span>
-                        {% else %}
-                            <span class="text-muted">Prix sur demande</span>
-                        {% endif %}
-                        <a href="{{ path('artwork_show', {id: artwork.id}) }}" class="btn btn-sm btn-primary">Voir détails</a>
-                    </div>
+                    <form action="{{ path('artworks') }}" method="GET">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Catégorie</label>
+                            <select name="category" class="form-select">
+                                <option value="">Toutes les catégories</option>
+                                {% for category in categories %}
+                                    <option value="{{ category.name }}" {{ filters.category == category.name ? 'selected' : '' }}>
+                                        {{ category.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Prix (€)</label>
+                            <div class="d-flex gap-2">
+                                <input type="number" name="min_price" class="form-control" placeholder="Min" value="{{ filters.min_price }}">
+                                <input type="number" name="max_price" class="form-control" placeholder="Max" value="{{ filters.max_price }}">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Trier par</label>
+                            <select name="sort" class="form-select mb-2">
+                                <option value="newest" {{ filters.sort == 'newest' ? 'selected' : '' }}>Plus récents</option>
+                                <option value="price" {{ filters.sort == 'price' ? 'selected' : '' }}>Prix</option>
+                                <option value="likes" {{ filters.sort == 'likes' ? 'selected' : '' }}>Popularité</option>
+                            </select>
+                            <select name="direction" class="form-select">
+                                <option value="DESC" {{ filters.direction == 'DESC' ? 'selected' : '' }}>Décroissant</option>
+                                <option value="ASC" {{ filters.direction == 'ASC' ? 'selected' : '' }}>Croissant</option>
+                            </select>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Appliquer</button>
+                            <a href="{{ path('artworks') }}" class="btn btn-outline-secondary">Réinitialiser</a>
+                        </div>
+                    </form>
                 </div>
             </div>
-        </div>
-        {% else %}
-        <div class="col-12">
-            <div class="alert alert-info text-center">
-                <i class="fas fa-info-circle me-2"></i>Aucune œuvre disponible pour le moment.
-                <br>
-                <a href="{{ path('admin_dashboard') }}" class="btn btn-primary mt-3">Ajouter une œuvre (Admin)</a>
+            
+            <div class="d-grid mt-3">
+                <a href="{{ path('harvard_collection') }}" class="btn btn-danger text-white shadow-sm">
+                    <i class="fas fa-university me-2"></i>Collection Harvard
+                </a>
             </div>
         </div>
-        {% endfor %}
+
+        <!-- Artwork Grid -->
+        <div class="col-lg-9">
+            <div class="row g-4">
+                {% for artwork in artworks %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm border-0 transition-hover">
+                        <div class="position-relative">
+                            {% if artwork.imageUrl %}
+                                <img src="{{ artwork.imageUrl }}" alt="{{ artwork.title }}" class="card-img-top artwork-image" style="height: 250px; object-fit: cover;">
+                            {% else %}
+                                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 250px;">
+                                    <i class="fas fa-image fa-3x text-muted"></i>
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Like Button Overlay -->
+                            <button class="btn btn-light rounded-circle position-absolute top-0 end-0 m-2 shadow-sm like-btn" 
+                                    data-artwork-id="{{ artwork.id }}"
+                                    data-url="{{ path('api_artworks_like', {id: artwork.id}) }}"
+                                    title="J'aime">
+                                <i class="far fa-heart text-danger"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title mb-0 text-truncate">{{ artwork.title }}</h5>
+                                <span class="badge bg-light text-dark border">
+                                    <i class="fas fa-heart text-danger me-1"></i>
+                                    <span class="likes-count">{{ artwork.likesCount }}</span>
+                                </span>
+                            </div>
+                            
+                            <p class="text-muted small mb-2">
+                                {% if artwork.category %}
+                                    <span class="badge bg-info bg-opacity-10 text-info">{{ artwork.category.name }}</span>
+                                {% endif %}
+                            </p>
+                            
+                            {% if artwork.description %}
+                                <p class="card-text small text-muted">{{ artwork.description|slice(0, 100) }}...</p>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center pb-3">
+                            <span class="fw-bold text-primary">{{ artwork.price ? artwork.price ~ ' €' : 'Sur demande' }}</span>
+                            <a href="{{ path('artwork_show', {id: artwork.id}) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Voir</a>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-12">
+                    <div class="alert alert-info text-center py-5">
+                        <i class="fas fa-search fa-3x mb-3 text-info"></i>
+                        <h5>Aucune œuvre trouvée</h5>
+                        <p>Essayez de modifier vos filtres de recherche.</p>
+                        <a href="{{ path('artworks') }}" class="btn btn-primary mt-2">Voir tout</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
