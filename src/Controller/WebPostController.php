@@ -65,6 +65,20 @@ class WebPostController extends AbstractController
             }
         }
 
-        return $this->render('post/show.html.twig', ['post' => $post]);
+        // Load comments with their replies
+        $comments = $em->getRepository(Comment::class)->findBy(
+            ['post' => $post, 'parentComment' => null],
+            ['createdAt' => 'ASC']
+        );
+
+        // Load replies for each comment
+        foreach ($comments as $comment) {
+            $comment->getReplies(); // This will lazy load replies
+        }
+
+        return $this->render('post/show.html.twig', [
+            'post' => $post,
+            'comments' => $comments
+        ]);
     }
 }

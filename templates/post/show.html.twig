@@ -2,41 +2,576 @@
 
 {% block title %}Post #{{ post.id }}{% endblock %}
 
+{% block stylesheets %}
+{{ parent() }}
+<style>
+:root {
+    --primary-color: #7f00ff;
+    --secondary-color: #FF9CB6;
+    --accent-color: #FFD0E6;
+    --dark: #2c3e50;
+    --success: #22c55e;
+    --danger: #f87171;
+}
+
+.comment-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.95));
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 8px 20px rgba(196, 159, 255, 0.12);
+    border: 1px solid rgba(196, 159, 255, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.comment-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px rgba(196, 159, 255, 0.18);
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.comment-author {
+    font-weight: 600;
+    color: var(--dark);
+    font-size: 1rem;
+}
+
+.comment-content {
+    margin-bottom: 12px;
+    line-height: 1.6;
+    color: #555;
+}
+
+.comment-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+}
+
+.comment-meta {
+    color: #888;
+    font-size: 0.8rem;
+}
+
+.reply-btn {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.reply-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(127, 0, 255, 0.3);
+    color: white;
+    text-decoration: none;
+}
+
+.reply-form {
+    display: none;
+    margin-top: 15px;
+    padding: 15px;
+    background: linear-gradient(135deg, rgba(255, 248, 250, 0.95), rgba(250, 248, 255, 0.95));
+    border-radius: 12px;
+    border: 1px solid rgba(255, 156, 182, 0.2);
+}
+
+.three-dots-btn {
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    font-size: 1rem;
+}
+
+.three-dots-btn:hover {
+    background-color: rgba(196, 159, 255, 0.1);
+    color: var(--primary-color);
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.95));
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    min-width: 140px;
+    border: 1px solid rgba(196, 159, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.dropdown-menu.show {
+    display: block;
+}
+
+.dropdown-item {
+    padding: 10px 15px;
+    text-decoration: none;
+    color: var(--dark);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s ease;
+    border-radius: 6px;
+    margin: 2px 4px;
+}
+
+.dropdown-item:hover {
+    background: linear-gradient(135deg, rgba(196, 159, 255, 0.1), rgba(255, 156, 182, 0.1));
+    color: var(--dark);
+    text-decoration: none;
+}
+
+.dropdown-item.danger {
+    color: var(--danger);
+}
+
+.dropdown-item.danger:hover {
+    background: linear-gradient(135deg, rgba(248, 113, 113, 0.1), rgba(248, 113, 113, 0.05));
+    color: var(--danger);
+}
+
+.replies {
+    margin-left: 40px;
+    margin-top: 15px;
+    position: relative;
+}
+
+.replies::before {
+    content: '';
+    position: absolute;
+    left: -20px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--primary-color), var(--secondary-color));
+    border-radius: 1px;
+}
+
+.edit-form textarea {
+    border-radius: 8px;
+    border: 1px solid rgba(196, 159, 255, 0.3);
+    padding: 10px;
+    font-family: inherit;
+    resize: vertical;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.edit-form textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(127, 0, 255, 0.1);
+    outline: none;
+}
+
+.btn-save {
+    background: linear-gradient(135deg, var(--success) 0%, #16a34a 100%);
+    border: none;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.btn-save:hover {
+    transform: translateY(-1px);
+    color: white;
+}
+
+.btn-cancel {
+    background: #6b7280;
+    border: none;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    margin-left: 8px;
+    transition: background-color 0.2s ease;
+}
+
+.btn-cancel:hover {
+    background: #4b5563;
+    color: white;
+}
+
+.comment-form-section {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.95));
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 8px 20px rgba(196, 159, 255, 0.12);
+    border: 1px solid rgba(196, 159, 255, 0.1);
+    margin-top: 20px;
+}
+
+.form-control {
+    border-radius: 8px;
+    border: 1px solid rgba(196, 159, 255, 0.3);
+    padding: 12px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(127, 0, 255, 0.1);
+    outline: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    border: none;
+    border-radius: 25px;
+    padding: 12px 24px;
+    font-weight: 600;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 12px rgba(127, 0, 255, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(127, 0, 255, 0.4);
+    color: white;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+}
+
+.text-muted {
+    color: #888 !important;
+}
+
+.fw-semibold {
+    font-weight: 600;
+}
+</style>
+{% endblock %}
+
 {% block body %}
-<h1>Post #{{ post.id }}</h1>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, rgba(196, 159, 255, 0.1), rgba(255, 156, 182, 0.1)); border-bottom: 1px solid rgba(196, 159, 255, 0.2);">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-user-circle me-2" style="color: var(--primary-color);"></i>
+                        {{ post.authorUuid }}
+                    </h5>
+                    <button class="three-dots-btn post-menu-btn" onclick="togglePostDropdown()">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </button>
+                    <div class="dropdown-menu post-dropdown-menu" id="post-dropdown">
+                        <a class="dropdown-item" href="#" onclick="editPost({{ post.id }}, '{{ post.content|escape('js') }}')">
+                            <i class="fas fa-edit me-2"></i>Modifier
+                        </a>
+                        <a class="dropdown-item danger" href="#" onclick="deletePost({{ post.id }})">
+                            <i class="fas fa-trash me-2"></i>Supprimer
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="post-content-{{ post.id }}">
+                        <p class="card-text">{{ post.content|nl2br }}</p>
+                        {% if post.imageUrl %}
+                            <img src="{{ post.imageUrl }}" class="img-fluid rounded mb-3" alt="Post image">
+                        {% endif %}
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="fas fa-clock me-1"></i>Publié le {{ post.createdAt|date('d/m/Y H:i') }}
+                        </small>
+                        <small class="text-muted">
+                            <i class="fas fa-heart me-1"></i>{{ post.likesCount }} likes
+                        </small>
+                    </div>
+                </div>
+            </div>
 
-<p><strong>Auteur :</strong> {{ post.authorUuid }}</p>
-<p>{{ post.content|nl2br }}</p>
-{% if post.imageUrl %}
-    <img src="{{ post.imageUrl }}" style="max-width:400px;">
-{% endif %}
-<p><small>Publié le {{ post.createdAt|date('d/m/Y H:i') }}</small></p>
-<p>Likes : {{ post.likesCount }}</p>
+            <div class="mt-4">
+                <h4 class="mb-4">
+                    <i class="fas fa-comments me-2" style="color: var(--primary-color);"></i>
+                    Commentaires
+                </h4>
 
-<hr>
+                {% macro display_comment(comment, post, level) %}
+                    <div class="comment-card" data-comment-id="{{ comment.id }}" data-level="{{ level }}">
+                        <div class="comment-header">
+                            <span class="comment-author">
+                                <i class="fas fa-user-circle me-2" style="color: var(--primary-color);"></i>
+                                {{ comment.commenterUuid }}
+                            </span>
+                            <button class="three-dots-btn" onclick="toggleDropdown({{ comment.id }})">
+                                <i class="fas fa-ellipsis-h"></i>
+                            </button>
+                            <div class="dropdown-menu" id="dropdown-{{ comment.id }}">
+                                <a class="dropdown-item" href="#" onclick="editComment({{ comment.id }}, '{{ comment.content|escape('js') }}')">
+                                    <i class="fas fa-edit me-2"></i>Modifier
+                                </a>
+                                <a class="dropdown-item danger" href="#" onclick="deleteComment({{ comment.id }})">
+                                    <i class="fas fa-trash me-2"></i>Supprimer
+                                </a>
+                            </div>
+                        </div>
+                        <div class="comment-content" id="content-{{ comment.id }}">
+                            {{ comment.content|nl2br }}
+                        </div>
+                        <div class="comment-actions">
+                            <span class="comment-meta">
+                                <i class="fas fa-clock me-1"></i>{{ comment.createdAt|date('d/m/Y H:i') }}
+                            </span>
+                            <button class="reply-btn" onclick="showReplyForm({{ comment.id }})">
+                                <i class="fas fa-reply me-1"></i>Répondre
+                            </button>
+                        </div>
+                        <div class="reply-form" id="reply-form-{{ comment.id }}">
+                            <form onsubmit="submitReply(event, {{ comment.id }}, {{ post.id }})">
+                                <div class="mb-3">
+                                    <textarea class="form-control" name="reply_content" placeholder="Votre réponse..." required rows="2"></textarea>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-paper-plane me-1"></i>Répondre
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-cancel" onclick="hideReplyForm({{ comment.id }})">
+                                        <i class="fas fa-times me-1"></i>Annuler
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        {% if comment.replies|length > 0 %}
+                            <div class="replies">
+                                {% for reply in comment.replies %}
+                                    {{ _self.display_comment(reply, post, level + 1) }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endmacro %}
 
-<h2>Commentaires</h2>
+                {% for comment in comments %}
+                    {{ _self.display_comment(comment, post, 0) }}
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-comments text-muted" style="font-size: 3rem; opacity: 0.5;"></i>
+                        <p class="text-muted mt-3">Aucun commentaire pour le moment.</p>
+                        <p class="text-muted small">Soyez le premier à commenter !</p>
+                    </div>
+                {% endfor %}
 
-{% for comment in post.comments %}
-    <div style="border-bottom:1px solid #ddd; margin-bottom:10px;">
-        <p><strong>{{ comment.commenterUuid }}</strong> a écrit :</p>
-        <p>{{ comment.content|nl2br }}</p>
-        <p><small>Le {{ comment.createdAt|date('d/m/Y H:i') }}</small></p>
+                <div class="comment-form-section">
+                    <h5 class="mb-3">
+                        <i class="fas fa-plus-circle me-2" style="color: var(--primary-color);"></i>
+                        Ajouter un commentaire
+                    </h5>
+                    <form method="post">
+                        <div class="mb-3">
+                            <label for="commenter_uuid" class="form-label fw-semibold">
+                                <i class="fas fa-id-badge me-1"></i>Votre UUID
+                            </label>
+                            <input type="text" name="commenter_uuid" id="commenter_uuid" class="form-control" placeholder="Votre UUID" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="comment_content" class="form-label fw-semibold">
+                                <i class="fas fa-comment-dots me-1"></i>Votre commentaire
+                            </label>
+                            <textarea name="content" id="comment_content" class="form-control" placeholder="Partagez vos pensées..." required rows="4"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-2"></i>Publier le commentaire
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <a href="{{ path('post_index') }}" class="btn btn-outline-secondary w-100">← Retour à la liste</a>
+        </div>
     </div>
-{% else %}
-    <p>Aucun commentaire.</p>
-{% endfor %}
+</div>
 
-<hr>
+<script>
+function toggleDropdown(commentId) {
+    const dropdown = document.getElementById('dropdown-' + commentId);
+    // Close other dropdowns
+    document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+        if (menu !== dropdown) menu.classList.remove('show');
+    });
+    dropdown.classList.toggle('show');
+}
 
-<h3>Ajouter un commentaire</h3>
-<form method="post">
-    <input type="text" name="commenter_uuid" placeholder="Votre UUID" required>
-    <br>
-    <textarea name="content" placeholder="Votre commentaire..." required></textarea>
-    <br>
-    <button type="submit">Envoyer</button>
-</form>
+function togglePostDropdown() {
+    const dropdown = document.getElementById('post-dropdown');
+    // Close other dropdowns
+    document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+        if (menu !== dropdown) menu.classList.remove('show');
+    });
+    dropdown.classList.toggle('show');
+}
 
-<a href="{{ path('post_index') }}">← Retour à la liste</a>
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.three-dots-btn') && !e.target.closest('.post-menu-btn')) {
+        document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+            menu.classList.remove('show');
+        });
+    }
+});
+
+function showReplyForm(commentId) {
+    const form = document.getElementById('reply-form-' + commentId);
+    form.style.display = 'block';
+}
+
+function hideReplyForm(commentId) {
+    const form = document.getElementById('reply-form-' + commentId);
+    form.style.display = 'none';
+    form.querySelector('textarea').value = '';
+}
+
+function submitReply(event, commentId, postId) {
+    event.preventDefault();
+    const form = event.target;
+    const content = form.querySelector('textarea').value;
+
+    // Here you would make an AJAX call to submit the reply
+    // For now, we'll just log it
+    console.log('Reply to comment', commentId, 'on post', postId, ':', content);
+
+    // Hide form and show success message
+    hideReplyForm(commentId);
+    alert('Réponse envoyée ! (Fonctionnalité à implémenter côté serveur)');
+}
+
+function editComment(commentId, currentContent) {
+    const contentDiv = document.getElementById('content-' + commentId);
+    const originalContent = contentDiv.innerHTML;
+
+    contentDiv.innerHTML = `
+        <form class="edit-form" onsubmit="submitEdit(event, ${commentId})">
+            <textarea class="form-control mb-2" name="edit_content" rows="2">${currentContent.replace(/<br\s*\/?>/gi, '\n')}</textarea>
+            <button type="submit" class="btn-save">
+                <i class="fas fa-save me-1"></i>Sauvegarder
+            </button>
+            <button type="button" class="btn-cancel" onclick="cancelEdit(${commentId}, '${originalContent.replace(/'/g, "\\'")}')">
+                <i class="fas fa-times me-1"></i>Annuler
+            </button>
+        </form>
+    `;
+
+    // Close dropdown
+    document.getElementById('dropdown-' + commentId).classList.remove('show');
+}
+
+function cancelEdit(commentId, originalContent) {
+    const contentDiv = document.getElementById('content-' + commentId);
+    contentDiv.innerHTML = originalContent;
+}
+
+function submitEdit(event, commentId) {
+    event.preventDefault();
+    const form = event.target;
+    const content = form.querySelector('textarea').value;
+
+    // Here you would make an AJAX call to update the comment
+    // For now, we'll just update the display
+    console.log('Edit comment', commentId, ':', content);
+
+    const contentDiv = document.getElementById('content-' + commentId);
+    contentDiv.innerHTML = content.replace(/\n/g, '<br>');
+
+    alert('Commentaire modifié ! (Fonctionnalité à implémenter côté serveur)');
+}
+
+function deleteComment(commentId) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?')) {
+        // Here you would make an AJAX call to delete the comment
+        console.log('Delete comment', commentId);
+
+        // For now, just hide the comment
+        const commentDiv = document.querySelector(`[data-comment-id="${commentId}"]`);
+        commentDiv.style.display = 'none';
+
+        alert('Commentaire supprimé ! (Fonctionnalité à implémenter côté serveur)');
+    }
+}
+
+function editPost(postId, currentContent) {
+    const contentDiv = document.getElementById('post-content-' + postId);
+    const originalContent = contentDiv.innerHTML;
+
+    contentDiv.innerHTML = `
+        <form class="edit-form" onsubmit="submitPostEdit(event, ${postId})">
+            <div class="mb-3">
+                <textarea class="form-control mb-2" name="edit_content" rows="4" required>${currentContent.replace(/<br\s*\/?>/gi, '\n').replace(/<p>|<\/p>/gi, '')}</textarea>
+            </div>
+            <button type="submit" class="btn-save">
+                <i class="fas fa-save me-1"></i>Sauvegarder
+            </button>
+            <button type="button" class="btn-cancel" onclick="cancelPostEdit(${postId}, '${originalContent.replace(/'/g, "\\'")}')">
+                <i class="fas fa-times me-1"></i>Annuler
+            </button>
+        </form>
+    `;
+
+    // Close dropdown
+    document.getElementById('post-dropdown').classList.remove('show');
+}
+
+function cancelPostEdit(postId, originalContent) {
+    const contentDiv = document.getElementById('post-content-' + postId);
+    contentDiv.innerHTML = originalContent;
+}
+
+function submitPostEdit(event, postId) {
+    event.preventDefault();
+    const form = event.target;
+    const content = form.querySelector('textarea').value;
+
+    // Here you would make an AJAX call to update the post
+    // For now, we'll just update the display
+    console.log('Edit post', postId, ':', content);
+
+    const contentDiv = document.getElementById('post-content-' + postId);
+    contentDiv.innerHTML = `<p class="card-text">${content.replace(/\n/g, '<br>')}</p>`;
+
+    alert('Post modifié ! (Fonctionnalité à implémenter côté serveur)');
+}
+
+function deletePost(postId) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce post ?')) {
+        // Here you would make an AJAX call to delete the post
+        console.log('Delete post', postId);
+
+        // For now, redirect to index or hide the post
+        alert('Post supprimé ! (Fonctionnalité à implémenter côté serveur)');
+        // window.location.href = '{{ path('post_index') }}';
+    }
+}
+</script>
 {% endblock %}

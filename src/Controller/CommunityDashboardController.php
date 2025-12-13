@@ -6,6 +6,7 @@ use App\Entity\Post;
 use App\Repository\PostRepository;
 use App\Repository\CommentRepository;
 use App\Service\ContentFilter;
+use App\Service\SearchService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,7 +22,8 @@ class CommunityDashboardController extends AbstractController
         private PostRepository $postRepository,
         private CommentRepository $commentRepository,
         private EntityManagerInterface $em,
-        private ContentFilter $contentFilter
+        private ContentFilter $contentFilter,
+        private SearchService $searchService
     ) {
     }
 
@@ -32,6 +34,12 @@ class CommunityDashboardController extends AbstractController
         $sortBy = $request->query->get('sort', 'recent');
         $search = $request->query->get('search');
 
+        // Use MeiliSearch ONLY for search queries (no category or sort filters)
+        if (!empty($search) && empty($categoryId) && $sortBy === 'recent') {
+            return $this->searchAndRender($search, $request);
+        }
+
+        // Use SQL for category filtering and sorting
         $qb = $this->postRepository->createQueryBuilder('p')
             ->leftJoin('p.category', 'c')
             ->addSelect('c');
@@ -40,12 +48,6 @@ class CommunityDashboardController extends AbstractController
         if ($categoryId) {
             $qb->andWhere('p.category = :categoryId')
                ->setParameter('categoryId', $categoryId);
-        }
-
-        // Apply search filter
-        if ($search) {
-            $qb->andWhere('p.content LIKE :search')
-               ->setParameter('search', '%' . $search . '%');
         }
 
         // Apply sorting
@@ -88,6 +90,65 @@ class CommunityDashboardController extends AbstractController
             'stats' => $stats,
             'currentCategory' => $categoryId,
             'currentSort' => $sortBy,
+            'currentSearch' => $search,
+        ]);
+    }
+
+    /**
+     * Handle search using MeiliSearch and render admin view
+     * Only called when search is used alone (no category or sort filters)
+     */
+    private function searchAndRender(string $search, Request $request): Response
+    {
+        // Perform search using MeiliSearch (no filters since we only use search alone)
+        $searchResults = $this->searchService->searchPosts($search, 100, []);
+
+        if (isset($searchResults['error'])) {
+            // Fallback to SQL LIKE if MeiliSearch fails
+            $qb = $this->postRepository->createQueryBuilder('p')
+                ->leftJoin('p.category', 'c')
+                ->addSelect('c')
+                ->where('p.content LIKE :search')
+                ->setParameter('search', '%' . $search . '%')
+                ->orderBy('p.createdAt', 'DESC');
+
+            $posts = $qb->setMaxResults(100)->getQuery()->getResult();
+        } else {
+            // Get posts from MeiliSearch results
+            $postIds = array_column($searchResults['hits'], 'id');
+            if (empty($postIds)) {
+                $posts = [];
+            } else {
+                // Fetch posts with category joins for proper display
+                $posts = $this->postRepository->createQueryBuilder('p')
+                    ->leftJoin('p.category', 'c')
+                    ->addSelect('c')
+                    ->where('p.id IN (:ids)')
+                    ->setParameter('ids', $postIds)
+                    ->orderBy('p.createdAt', 'DESC') // Order by creation date as fallback
+                    ->getQuery()
+                    ->getResult();
+            }
+        }
+
+        // Calculate daily posts
+        $dailyPosts = [];
+        foreach ($posts as $post) {
+            $date = $post->getCreatedAt()->format('Y-m-d');
+            $dailyPosts[$date] = ($dailyPosts[$date] ?? 0) + 1;
+        }
+
+        $stats = [
+            'total_posts' => $this->postRepository->count([]),
+            'total_comments' => $this->commentRepository->count([]),
+            'daily_posts' => $dailyPosts,
+        ];
+
+        return $this->render('community/admin_list.html.twig', [
+            'posts' => $posts,
+            'stats' => $stats,
+            'currentCategory' => '', // No category filter when searching
+            'currentSort' => 'recent', // Always recent sort when searching
             'currentSearch' => $search,
         ]);
     }

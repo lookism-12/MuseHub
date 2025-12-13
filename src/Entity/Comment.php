@@ -24,6 +24,18 @@ class Comment
     #[ORM\Column(type: "datetime")]
     private \DateTimeInterface $createdAt;
 
+    #[ORM\Column(type: "boolean", options: ["default" => true])]
+    private bool $isValid = true;
+
+    #[ORM\Column(type: "boolean", options: ["default" => false])]
+    private bool $containsBadWords = false;
+
+    #[ORM\Column(type: "boolean", options: ["default" => false])]
+    private bool $isSpam = false;
+
+    #[ORM\Column(type: "float", nullable: true)]
+    private ?float $toxicityScore = null;
+
     #[ORM\ManyToOne(targetEntity: self::class, inversedBy: "replies")]
     #[ORM\JoinColumn(nullable: true, onDelete: "CASCADE")]
     private ?Comment $parentComment = null;
@@ -76,6 +88,50 @@ class Comment
     public function getCreatedAt(): \DateTimeInterface
     {
         return $this->createdAt;
+    }
+
+    public function isValid(): bool
+    {
+        return $this->isValid;
+    }
+
+    public function setIsValid(bool $isValid): self
+    {
+        $this->isValid = $isValid;
+        return $this;
+    }
+
+    public function isContainsBadWords(): bool
+    {
+        return $this->containsBadWords;
+    }
+
+    public function setContainsBadWords(bool $containsBadWords): self
+    {
+        $this->containsBadWords = $containsBadWords;
+        return $this;
+    }
+
+    public function isSpam(): bool
+    {
+        return $this->isSpam;
+    }
+
+    public function setIsSpam(bool $isSpam): self
+    {
+        $this->isSpam = $isSpam;
+        return $this;
+    }
+
+    public function getToxicityScore(): ?float
+    {
+        return $this->toxicityScore;
+    }
+
+    public function setToxicityScore(?float $toxicityScore): self
+    {
+        $this->toxicityScore = $toxicityScore;
+        return $this;
     }
 
     public function getParentComment(): ?Comment

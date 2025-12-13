@@ -1,0 +1,19 @@
+services:
+    # Meilisearch SearchService
+    App\Service\SearchService:
+        arguments:
+            $meilisearchUrl: '%env(MEILISEARCH_URL)%'
+            $meilisearchApiKey: '%env(MEILISEARCH_API_KEY)%'
+
+    # Perspective API CommentModerationService
+    App\Service\CommentModerationService:
+        arguments:
+            $perspectiveApiKey: '%env(PERSPECTIVE_API_KEY)%'
+            $perspectiveApiUrl: '%env(PERSPECTIVE_API_URL)%'
+
+    # Cloudinary ImageUploadService
+    App\Service\ImageUploadService:
+        arguments:
+            $cloudinaryCloudName: '%env(CLOUDINARY_CLOUD_NAME)%'
+            $cloudinaryApiKey: '%env(CLOUDINARY_API_KEY)%'
+            $cloudinaryApiSecret: '%env(CLOUDINARY_API_SECRET)%'

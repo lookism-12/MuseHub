@@ -1,0 +1,208 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Gestion Types d'Événements - MuseHub Admin{% endblock %}
+
+{% block body %}
+<div class="mb-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+    <div>
+        <h1 class="h3 mb-0">Gestion des Types d'Événements</h1>
+        <p class="text-muted mb-0">Gérer les catégories d'événements</p>
+    </div>
+    <a href="{{ path('admin_event_types_new') }}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Nouveau type
+    </a>
+</div>
+
+<div class="card mb-4" style="border-radius: 15px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <div class="card-body">
+        <form method="GET" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label text-muted small mb-1">Rechercher</label>
+                <input type="text" name="q" class="form-control" value="{{ search }}" placeholder="Nom ou description">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label text-muted small mb-1">Filtre</label>
+                <select name="status" class="form-select">
+                    {% set statuses = {
+                        'all': 'Tous',
+                        'active': 'Actifs',
+                        'inactive': 'Inactifs',
+                        'paid': 'Payants',
+                        'free': 'Gratuits'
+                    } %}
+                    {% for key, label in statuses %}
+                        <option value="{{ key }}" {{ statusFilter == key ? 'selected' : '' }}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-5 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">Appliquer</button>
+                <a href="{{ path('admin_event_types_list') }}" class="btn btn-outline-secondary">Réinitialiser</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Statistiques -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card" style="border-radius: 15px; border-left: 4px solid #3b82f6;">
+            <div class="card-body">
+                <h3 class="text-primary">{{ stats.total }}</h3>
+                <p class="text-muted mb-0">Total types</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card" style="border-radius: 15px; border-left: 4px solid #10b981;">
+            <div class="card-body">
+                <h3 class="text-success">{{ stats.active }}</h3>
+                <p class="text-muted mb-0">Actifs</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card" style="border-radius: 15px; border-left: 4px solid #f59e0b;">
+            <div class="card-body">
+                <h3 class="text-warning">{{ stats.paid }}</h3>
+                <p class="text-muted mb-0">Payants</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card" style="border-radius: 15px; border-left: 4px solid #10b981;">
+            <div class="card-body">
+                <h3 class="text-success">{{ stats.free }}</h3>
+                <p class="text-muted mb-0">Gratuits</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Liste des types -->
+<div class="card" style="border-radius: 15px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">Ordre</th>
+                        <th>Nom</th>
+                        <th>Capacité</th>
+                        <th>Durée</th>
+                        <th>Localisation</th>
+                        <th>Caractéristiques</th>
+                        <th>Statut</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for type in eventTypes %}
+                    <tr>
+                        <td class="text-center">
+                            <span class="badge bg-secondary">{{ type.sortOrder }}</span>
+                        </td>
+                        <td>
+                            <div>
+                                <strong>{{ type.name }}</strong>
+                            </div>
+                            {% if type.description %}
+                                <small class="text-muted">{{ type.description }}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if type.capacityType == 'unlimited' %}
+                                <span class="badge bg-success">Illimitée</span>
+                            {% elseif type.capacityType == 'limited' %}
+                                <span class="badge bg-warning">{{ type.defaultMaxParticipants }} max</span>
+                            {% else %}
+                                <span class="badge bg-danger">Invitation</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if type.typicalDurationHours %}
+                                {{ type.typicalDurationHours }}h
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if type.allowedLocation == 'both' %}
+                                <span class="badge bg-info">Online/Offline</span>
+                            {% elseif type.allowedLocation == 'online' %}
+                                <span class="badge bg-success">Online</span>
+                            {% else %}
+                                <span class="badge bg-primary">Offline</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex gap-1 flex-wrap">
+                                {% if type.requiresPayment %}
+                                    <span class="badge bg-warning" title="Payant">💰</span>
+                                {% endif %}
+                                {% if type.certificateEnabled %}
+                                    <span class="badge bg-success" title="Certificat">🎓</span>
+                                {% endif %}
+                                {% if type.recordingEnabled %}
+                                    <span class="badge bg-danger" title="Enregistrement">🎥</span>
+                                {% endif %}
+                                {% if type.visibility == 'members_only' %}
+                                    <span class="badge bg-secondary" title="Membres">👥</span>
+                                {% elseif type.visibility == 'private' %}
+                                    <span class="badge bg-dark" title="Privé">🔒</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            {% if type.isActive %}
+                                <span class="badge bg-success">Actif</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inactif</span>
+                            {% endif %}
+                            <div class="mt-1">
+                                <small class="text-muted">{{ type.events|length }} événement(s)</small>
+                            </div>
+                        </td>
+                        <td class="text-end">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ path('admin_event_types_edit', {id: type.id}) }}" 
+                                   class="btn btn-outline-primary" 
+                                   title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form method="POST" 
+                                      action="{{ path('admin_event_types_toggle', {id: type.id}) }}" 
+                                      class="d-inline">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('toggle_event_type_' ~ type.id) }}">
+                                    <button type="submit" 
+                                            class="btn btn-outline-{{ type.isActive ? 'warning' : 'success' }}" 
+                                            title="{{ type.isActive ? 'Désactiver' : 'Activer' }}">
+                                        <i class="fas fa-{{ type.isActive ? 'toggle-on' : 'toggle-off' }}"></i>
+                                    </button>
+                                </form>
+                                <form method="POST" 
+                                      action="{{ path('admin_event_types_delete', {id: type.id}) }}" 
+                                      class="d-inline"
+                                      onsubmit="return confirm('Êtes-vous sûr de vouloir désactiver ce type ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_event_type_' ~ type.id) }}">
+                                    <button type="submit" class="btn btn-outline-danger" title="Supprimer">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="9" class="text-center text-muted py-5">
+                            <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                            Aucun type d'événement trouvé
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -8,6 +8,7 @@ use App\Repository\CommentRepository;
 use App\Repository\PostRepository;
 use App\Service\ContentFilter;
 use App\Service\NotificationService;
+use App\Service\CommentModerationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -24,7 +25,8 @@ class CommentController extends AbstractController
         private PostRepository $postRepository,
         private CommentRepository $commentRepository,
         private ContentFilter $contentFilter,
-        private NotificationService $notificationService
+        private NotificationService $notificationService,
+        private CommentModerationService $moderationService
     ) {
     }
 
@@ -39,9 +41,18 @@ class CommentController extends AbstractController
 
         $user = $this->getUser();
         $data = json_decode($request->getContent(), true);
-        
+
         if (!isset($data['content'])) {
             return $this->json(['error' => 'content is required'], Response::HTTP_BAD_REQUEST);
+        }
+
+        // Check toxicity with Perspective API
+        $toxicityCheck = $this->moderationService->checkToxicity($data['content']);
+        if ($toxicityCheck['isToxic']) {
+            return $this->json([
+                'error' => $this->moderationService->getToxicityErrorMessage($toxicityCheck['score']),
+                'toxicity_score' => $toxicityCheck['score'],
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         // Filter content
@@ -91,6 +102,15 @@ class CommentController extends AbstractController
         $data = json_decode($request->getContent(), true);
 
         if (isset($data['content'])) {
+            // Check toxicity with Perspective API
+            $toxicityCheck = $this->moderationService->checkToxicity($data['content']);
+            if ($toxicityCheck['isToxic']) {
+                return $this->json([
+                    'error' => $this->moderationService->getToxicityErrorMessage($toxicityCheck['score']),
+                    'toxicity_score' => $toxicityCheck['score'],
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
             // Filter content
             $filterResult = $this->contentFilter->filterContent($data['content']);
             if (!$filterResult['isValid']) {
@@ -129,6 +149,15 @@ class CommentController extends AbstractController
 
         if (!isset($data['content'])) {
             return $this->json(['error' => 'content is required'], Response::HTTP_BAD_REQUEST);
+        }
+
+        // Check toxicity with Perspective API
+        $toxicityCheck = $this->moderationService->checkToxicity($data['content']);
+        if ($toxicityCheck['isToxic']) {
+            return $this->json([
+                'error' => $this->moderationService->getToxicityErrorMessage($toxicityCheck['score']),
+                'toxicity_score' => $toxicityCheck['score'],
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         // Filter content

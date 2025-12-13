@@ -2,14 +2,63 @@
 
 {% block title %}Communauté - MuseHub{% endblock %}
 
-{% macro render_comment(comment, post, commentAuthorNames, isReply = false) %}
+{% macro render_comment(comment, post, commentAuthorNames, moderationData, isReply = false) %}
     {% set commentDisplayName = commentAuthorNames[comment.commenterUuid] ?? (comment.commenterUuid starts with 'guest_' ? 'Invité MuseHub' : 'Utilisateur ' ~ comment.commenterUuid|slice(0,8)) %}
     {% set canManageComment = app.user and (is_granted('ROLE_ADMIN') or app.user.uuid == comment.commenterUuid) %}
-    <div class="comment-item {{ isReply ? 'ms-4' : '' }}" id="comment-{{ comment.id }}">
+    {% set isAdmin = is_granted('ROLE_ADMIN') %}
+    {% set moderationInfo = moderationData[comment.id] ?? null %}
+
+    {# Determine comment styling based on moderation status for admins #}
+    {% set commentClasses = ['comment-item'] %}
+    {% if isReply %}
+        {% set commentClasses = commentClasses|merge(['ms-4']) %}
+    {% endif %}
+    {% if isAdmin and moderationInfo %}
+        {% if not moderationInfo.isValid or moderationInfo.containsBadWords or moderationInfo.isSpam %}
+            {% set commentClasses = commentClasses|merge(['comment-flagged']) %}
+        {% else %}
+            {% set commentClasses = commentClasses|merge(['comment-valid']) %}
+        {% endif %}
+    {% endif %}
+
+    <div class="{{ commentClasses|join(' ') }}" id="comment-{{ comment.id }}">
         <div class="comment-avatar">{{ commentDisplayName|slice(0,1)|upper }}</div>
         <div class="comment-bubble">
             <div class="comment-author">{{ commentDisplayName }}</div>
             <div class="comment-meta">{{ comment.createdAt|date('d/m/Y H:i') }}</div>
+
+            {# Admin moderation badges #}
+            {% if isAdmin %}
+                {% if moderationInfo %}
+                    <div class="comment-moderation-badges mb-2">
+                        {% if moderationInfo.isValid and not moderationInfo.containsBadWords and not moderationInfo.isSpam %}
+                            <span class="badge bg-success">✓ Validé</span>
+                        {% else %}
+                            <span class="badge bg-danger">⚠ Flagged</span>
+                        {% endif %}
+
+                        {% if moderationInfo.containsBadWords %}
+                            <span class="badge bg-warning text-dark">🚫 Bad Words</span>
+                        {% endif %}
+
+                        {% if moderationInfo.isSpam %}
+                            <span class="badge bg-secondary">📢 Spam</span>
+                        {% endif %}
+
+                        {% if moderationInfo.toxicityScore %}
+                            <span class="badge bg-info text-dark" title="Score de toxicité">
+                                🧪 {{ moderationInfo.toxicityScore|number_format(2) }}
+                            </span>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="text-muted small mb-2">
+                        No moderation data for comment {{ comment.id }}
+                        <br><small>Debug: isValid={{ comment.isValid ?? 'null' }}, containsBadWords={{ comment.isContainsBadWords ?? 'null' }}</small>
+                    </div>
+                {% endif %}
+            {% endif %}
+
             <div class="comment-content">{{ comment.content|nl2br }}</div>
             <div class="comment-actions">
                 {% if app.user %}
@@ -54,7 +103,7 @@
         </div>
     </div>
     {% for reply in comment.replies %}
-        {{ _self.render_comment(reply, post, commentAuthorNames, true) }}
+        {{ _self.render_comment(reply, post, commentAuthorNames, moderationData, true) }}
     {% endfor %}
 {% endmacro %}
 
@@ -350,6 +399,215 @@
         background: rgba(127, 0, 255, 0.08);
         color: #7f00ff;
     }
+
+    /* Chatbot Styles */
+    .chatbot-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 350px;
+        height: 500px;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(23, 15, 46, 0.15);
+        border: 1px solid rgba(127, 0, 255, 0.08);
+        z-index: 1000;
+        display: none;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .chatbot-header {
+        background: linear-gradient(135deg, #7f00ff, #ff9cb6);
+        color: #fff;
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-weight: 600;
+    }
+
+    .chatbot-messages {
+        flex: 1;
+        padding: 16px;
+        overflow-y: auto;
+        background: #f8fafc;
+    }
+
+    .chatbot-message {
+        margin-bottom: 12px;
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .chatbot-message.bot .message-avatar {
+        background: linear-gradient(135deg, #7f00ff, #ff9cb6);
+        color: #fff;
+    }
+
+    .chatbot-message.user {
+        flex-direction: row-reverse;
+    }
+
+    .chatbot-message.user .message-bubble {
+        background: linear-gradient(135deg, #7f00ff, #ff9cb6);
+        color: #fff;
+        margin-left: auto;
+    }
+
+    .message-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: 600;
+        flex-shrink: 0;
+    }
+
+    .message-bubble {
+        background: #fff;
+        padding: 10px 14px;
+        border-radius: 16px;
+        max-width: 250px;
+        word-wrap: break-word;
+        border: 1px solid rgba(127, 0, 255, 0.05);
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+
+    .chatbot-input-area {
+        border-top: 1px solid #f1f5f9;
+        padding: 16px;
+        background: #fff;
+    }
+
+    .chatbot-input-group {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .chatbot-input {
+        flex: 1;
+        border: 1px solid #e5e7eb;
+        border-radius: 20px;
+        padding: 8px 16px;
+        font-size: 0.9rem;
+        outline: none;
+        resize: none;
+        min-height: 36px;
+        max-height: 80px;
+    }
+
+    .chatbot-input:focus {
+        border-color: #7f00ff;
+        box-shadow: 0 0 0 2px rgba(127, 0, 255, 0.15);
+    }
+
+    .chatbot-send-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #7f00ff, #ff9cb6);
+        border: none;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+    }
+
+    .chatbot-send-btn:hover {
+        transform: scale(1.1);
+    }
+
+    .chatbot-toggle {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #7f00ff, #ff9cb6);
+        border: none;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        cursor: pointer;
+        box-shadow: 0 6px 20px rgba(127, 0, 255, 0.3);
+        z-index: 999;
+        transition: transform 0.3s ease;
+    }
+
+    .chatbot-toggle:hover {
+        transform: scale(1.1);
+    }
+
+    .chatbot-toggle.active {
+        background: #dc2626;
+    }
+
+    .typing-indicator {
+        display: none;
+        align-items: center;
+        gap: 4px;
+        padding: 8px 12px;
+        color: #6b7280;
+        font-size: 0.8rem;
+    }
+
+    .typing-dots {
+        display: flex;
+        gap: 2px;
+    }
+
+    .typing-dot {
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: #6b7280;
+        animation: typing 1.4s infinite;
+    }
+
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typing {
+        0%, 60%, 100% { transform: translateY(0); }
+        30% { transform: translateY(-8px); }
+    }
+
+    /* Admin Comment Moderation Styles */
+    .comment-valid {
+        border-left: 4px solid #198754;
+        background: rgba(25, 135, 84, 0.05);
+    }
+
+    .comment-flagged {
+        border-left: 4px solid #dc3545;
+        background: rgba(220, 53, 69, 0.05);
+    }
+
+    .comment-moderation-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 8px;
+    }
+
+    .comment-moderation-badges .badge {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+        border-radius: 12px;
+    }
 </style>
 {% endblock %}
 
@@ -361,7 +619,23 @@
             <span class="pill-badge mb-3 d-inline-block">Communauté MuseHub</span>
             <h1 class="display-5 fw-bold mb-2">Partagez vos inspirations</h1>
             <p class="lead text-muted">Photos, pensées, questions – exprimez-vous comme sur Facebook.</p>
+            <p class="text-muted small">Max 5 commentaires par minute</p>
         </div>
+
+        <!-- Flash Messages -->
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i>{{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>{{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
 
         {% if app.user %}
             <div class="composer-card mb-4">
@@ -403,11 +677,21 @@
             </div>
         {% endif %}
 
-        <!-- Filters and Sorting -->
+        <!-- Search Bar -->
         <div class="card mb-4">
             <div class="card-body">
                 <div class="row g-3 align-items-end">
-                    <div class="col-md-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Rechercher</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" class="form-control" id="searchInput" placeholder="Rechercher dans les posts..." value="{{ currentSearch }}">
+                            <button type="button" class="btn btn-outline-secondary" id="clearSearch" style="display: {{ currentSearch ? 'block' : 'none' }};">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
                         <label class="form-label fw-semibold">Filtrer par catégorie</label>
                         <select class="form-select" id="categoryFilter">
                             <option value="">Toutes les catégories</option>
@@ -416,7 +700,7 @@
                             <option value="3" {{ currentCategory == '3' ? 'selected' : '' }}>Memes</option>
                         </select>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label fw-semibold">Trier par</label>
                         <select class="form-select" id="sortFilter">
                             <option value="recent" {{ currentSort == 'recent' ? 'selected' : '' }}>Plus récent</option>
@@ -424,15 +708,22 @@
                             <option value="commented" {{ currentSort == 'commented' ? 'selected' : '' }}>Plus commenté</option>
                         </select>
                     </div>
-                    <div class="col-md-4">
-                        <button type="button" class="btn btn-primary w-100" id="applyFilters">
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <button type="button" class="btn btn-primary me-2" id="applyFilters">
                             <i class="fas fa-filter me-2"></i>Appliquer les filtres
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="resetFilters">
+                            <i class="fas fa-undo me-2"></i>Réinitialiser
                         </button>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- Posts Container -->
+        <div id="posts-container">
         {% for post in posts %}
             <div class="post-item" id="post-{{ post.id }}" data-post-id="{{ post.id }}">
                 <div class="post-header">
@@ -550,14 +841,15 @@
                         {% endfor %}
 
                         {% for comment in topLevelComments %}
-                            {{ _self.render_comment(comment, post, commentAuthorNames) }}
+                            {{ _self.render_comment(comment, post, commentAuthorNames, moderationData) }}
                         {% else %}
                             <p class="text-muted text-center py-3 mb-0">Soyez le premier à commenter</p>
                         {% endfor %}
                     </div>
 
                     <div class="comment-form mt-3">
-                        <form class="comment-input-group" action="{{ path('web_posts_comment', {id: post.id}) }}" method="POST">
+                        <form class="comment-input-group" action="{{ path('community') }}" method="POST">
+                            <input type="hidden" name="post_id" value="{{ post.id }}">
                             <input type="hidden" name="_token" value="{{ csrf_token('comment_post_' ~ post.id) }}">
                             {% if not app.user %}
                                 <input type="text" class="form-control" name="commenter_name" placeholder="Votre nom (optionnel)">
@@ -577,6 +869,74 @@
                 <p class="text-muted">Lancez la conversation en partageant votre première publication.</p>
             </div>
         {% endfor %}
+        </div>
+
+        <!-- Loading indicator -->
+        <div id="loading-indicator" class="text-center py-4 d-none">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Chargement...</span>
+            </div>
+            <p class="text-muted mt-2">Recherche en cours...</p>
+        </div>
+
+        <!-- No results message -->
+        <div id="no-results" class="composer-card text-center d-none">
+            <i class="fas fa-search fa-2x text-muted mb-3"></i>
+            <h5 class="mb-2">Aucun résultat trouvé</h5>
+            <p class="text-muted">Essayez avec des termes différents ou vérifiez l'orthographe.</p>
+        </div>
+    </div>
+
+    <!-- Chatbot -->
+    <button class="chatbot-toggle" id="chatbotToggle" title="Assistant MuseHub">
+        <i class="fas fa-robot"></i>
+    </button>
+
+    <div class="chatbot-container" id="chatbotContainer">
+        <div class="chatbot-header">
+            <div class="d-flex align-items-center gap-2">
+                <i class="fas fa-robot"></i>
+                <span>Assistant MuseHub</span>
+            </div>
+            <button class="btn btn-link text-white p-0" id="chatbotClose" title="Fermer">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="chatbot-messages" id="chatbotMessages">
+            <div class="chatbot-message bot">
+                <div class="message-avatar">🤖</div>
+                <div class="message-bubble">
+                    Bonjour ! Je suis l'assistant virtuel de MuseHub. Comment puis-je vous aider aujourd'hui ?
+                    Tapez "aide" pour voir les questions que je peux traiter.
+                </div>
+            </div>
+        </div>
+
+        <div class="typing-indicator" id="typingIndicator">
+            <div class="message-avatar">🤖</div>
+            <span>Assistant écrit...</span>
+            <div class="typing-dots">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+        </div>
+
+        <div class="chatbot-input-area">
+            <div class="chatbot-input-group">
+                <textarea
+                    class="chatbot-input"
+                    id="chatbotInput"
+                    placeholder="Posez votre question..."
+                    rows="1"
+                    maxlength="500"
+                ></textarea>
+                <button class="chatbot-send-btn" id="chatbotSendBtn" title="Envoyer">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -692,22 +1052,181 @@
                 });
             });
 
+            // Search functionality
+            const searchInput = document.getElementById('searchInput');
+            const clearSearchBtn = document.getElementById('clearSearch');
+            const resetFiltersBtn = document.getElementById('resetFilters');
+
+            // Show/hide clear button based on search input
+            searchInput.addEventListener('input', function() {
+                clearSearchBtn.style.display = this.value.trim() ? 'block' : 'none';
+            });
+
+            // Clear search
+            clearSearchBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                this.style.display = 'none';
+                applyFilters();
+            });
+
+            // Reset all filters
+            resetFiltersBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                document.getElementById('categoryFilter').value = '';
+                document.getElementById('sortFilter').value = 'recent';
+                clearSearchBtn.style.display = 'none';
+                applyFilters();
+            });
+
             // Filter functionality
-            document.getElementById('applyFilters').addEventListener('click', function() {
+            document.getElementById('applyFilters').addEventListener('click', applyFilters);
+
+            // Auto-search on Enter key
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    applyFilters();
+                }
+            });
+
+            function applyFilters() {
+                const searchQuery = searchInput.value.trim();
                 const categoryId = document.getElementById('categoryFilter').value;
                 const sortBy = document.getElementById('sortFilter').value;
 
+                // Show loading indicator
+                document.getElementById('loading-indicator').classList.remove('d-none');
+                document.getElementById('posts-container').classList.add('d-none');
+                document.getElementById('no-results').classList.add('d-none');
+
+                // Build API URL
+                let apiUrl;
                 const params = new URLSearchParams();
+
                 if (categoryId) {
                     params.set('category', categoryId);
                 }
-                if (sortBy && sortBy !== 'recent') {
-                    params.set('sort', sortBy);
+
+                if (searchQuery) {
+                    // Use search API
+                    apiUrl = '{{ path('api_posts_search') }}';
+                    params.set('q', searchQuery);
+                } else {
+                    // Use regular list API
+                    apiUrl = '{{ path('api_posts_list') }}';
                 }
 
-                const url = '{{ path('community') }}' + (params.toString() ? '?' + params.toString() : '');
-                window.location.href = url;
-            });
+                // Add pagination and limits
+                params.set('page', '1');
+                params.set('limit', '50');
+
+                apiUrl += '?' + params.toString();
+
+                // Make API call
+                fetch(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                    },
+                    credentials: 'same-origin'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Hide loading
+                    document.getElementById('loading-indicator').classList.add('d-none');
+
+                    if (data.error) {
+                        console.error('API Error:', data.error);
+                        showNoResults();
+                        return;
+                    }
+
+                    if (!data.data || data.data.length === 0) {
+                        showNoResults();
+                        return;
+                    }
+
+                    // Render posts
+                    renderPosts(data.data);
+
+                    // Update URL without page reload
+                    const urlParams = new URLSearchParams();
+                    if (searchQuery) urlParams.set('q', searchQuery);
+                    if (categoryId) urlParams.set('category', categoryId);
+                    if (sortBy && sortBy !== 'recent') urlParams.set('sort', sortBy);
+
+                    const newUrl = '{{ path('community') }}' + (urlParams.toString() ? '?' + urlParams.toString() : '');
+                    window.history.pushState({}, '', newUrl);
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                    document.getElementById('loading-indicator').classList.add('d-none');
+                    showNoResults();
+                });
+            }
+
+            function renderPosts(posts) {
+                const container = document.getElementById('posts-container');
+                container.innerHTML = '';
+
+                if (posts.length === 0) {
+                    showNoResults();
+                    return;
+                }
+
+                posts.forEach(post => {
+                    const postElement = createPostElement(post);
+                    container.appendChild(postElement);
+                });
+
+                container.classList.remove('d-none');
+            }
+
+            function createPostElement(post) {
+                const postDiv = document.createElement('div');
+                postDiv.className = 'post-item';
+                postDiv.id = `post-${post.id}`;
+                postDiv.setAttribute('data-post-id', post.id);
+
+                // This is a simplified version - you'd need to build the full HTML structure
+                // For now, just show basic info
+                postDiv.innerHTML = `
+                    <div class="post-header">
+                        <div class="post-avatar">${(post.author_uuid || 'M').charAt(0).toUpperCase()}</div>
+                        <div class="flex-grow-1">
+                            <div class="post-author">Utilisateur ${post.author_uuid.substring(0, 8)}</div>
+                            <div class="post-meta">
+                                <span>${new Date(post.created_at).toLocaleDateString('fr-FR')}</span>
+                                <span>·</span>
+                                <i class="fas fa-globe-americas"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="post-content">${post.content.replace(/\n/g, '<br>')}</div>
+                    ${post.image_url ? `<img src="${post.image_url}" class="post-image" alt="Post image">` : ''}
+                    <div class="post-stats">
+                        <div class="d-flex align-items-center gap-4">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="like-chip"><i class="fas fa-thumbs-up"></i></span>
+                                <span class="like-count" data-post-id="${post.id}">${post.likes_count}</span>
+                            </div>
+                            <div class="dislike-pill">
+                                <i class="fas fa-thumbs-down"></i>
+                                <span class="dislike-count" data-post-id="${post.id}">${post.dislikes_count}</span>
+                            </div>
+                        </div>
+                        <div class="text-muted small">
+                            <span class="comment-count" data-post-id="${post.id}">${post.comments_count}</span> commentaires
+                        </div>
+                    </div>
+                `;
+
+                return postDiv;
+            }
+
+            function showNoResults() {
+                document.getElementById('posts-container').classList.add('d-none');
+                document.getElementById('no-results').classList.remove('d-none');
+            }
         });
     })();
 
@@ -805,6 +1324,125 @@
             alert('Impossible de contacter le serveur. Vérifiez votre connexion.');
         });
     }
+
+    // Chatbot functionality
+    (function() {
+        const chatbotToggle = document.getElementById('chatbotToggle');
+        const chatbotContainer = document.getElementById('chatbotContainer');
+        const chatbotClose = document.getElementById('chatbotClose');
+        const chatbotInput = document.getElementById('chatbotInput');
+        const chatbotSendBtn = document.getElementById('chatbotSendBtn');
+        const chatbotMessages = document.getElementById('chatbotMessages');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const chatbotUrl = '{{ path('chatbot_message') }}';
+
+        // Toggle chatbot visibility
+        chatbotToggle.addEventListener('click', function() {
+            const isVisible = chatbotContainer.style.display !== 'none';
+            if (isVisible) {
+                chatbotContainer.style.display = 'none';
+                chatbotToggle.classList.remove('active');
+            } else {
+                chatbotContainer.style.display = 'flex';
+                chatbotToggle.classList.add('active');
+                // Focus on input when opening
+                setTimeout(() => chatbotInput.focus(), 100);
+            }
+        });
+
+        // Close chatbot
+        chatbotClose.addEventListener('click', function() {
+            chatbotContainer.style.display = 'none';
+            chatbotToggle.classList.remove('active');
+        });
+
+        // Send message on button click
+        chatbotSendBtn.addEventListener('click', sendMessage);
+
+        // Send message on Enter key (but allow Shift+Enter for new lines)
+        chatbotInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Auto-resize textarea
+        chatbotInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 80) + 'px';
+        });
+
+        function sendMessage() {
+            const message = chatbotInput.value.trim();
+            if (!message) return;
+
+            // Add user message to chat
+            addMessage(message, 'user');
+
+            // Clear input
+            chatbotInput.value = '';
+            chatbotInput.style.height = 'auto';
+
+            // Show typing indicator
+            typingIndicator.style.display = 'flex';
+
+            // Scroll to bottom
+            scrollToBottom();
+
+            // Send to server
+            fetch(chatbotUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({ message: message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide typing indicator
+                typingIndicator.style.display = 'none';
+
+                if (data.error) {
+                    addMessage('Désolé, une erreur est survenue. Veuillez réessayer.', 'bot');
+                } else {
+                    addMessage(data.response, 'bot');
+                }
+            })
+            .catch(error => {
+                console.error('Chatbot error:', error);
+                typingIndicator.style.display = 'none';
+                addMessage('Désolé, impossible de contacter le serveur. Vérifiez votre connexion.', 'bot');
+            });
+        }
+
+        function addMessage(content, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chatbot-message ${type}`;
+
+            const avatarDiv = document.createElement('div');
+            avatarDiv.className = 'message-avatar';
+            avatarDiv.textContent = type === 'bot' ? '🤖' : '👤';
+
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.className = 'message-bubble';
+            bubbleDiv.innerHTML = content.replace(/\n/g, '<br>');
+
+            messageDiv.appendChild(avatarDiv);
+            messageDiv.appendChild(bubbleDiv);
+
+            chatbotMessages.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        function scrollToBottom() {
+            setTimeout(() => {
+                chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+            }, 100);
+        }
+    })();
 
 </script>
 {% endblock %}

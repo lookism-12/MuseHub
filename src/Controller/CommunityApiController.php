@@ -11,6 +11,7 @@ use App\Repository\PostRepository;
 use App\Repository\UserRepository;
 use App\Service\ContentFilter;
 use App\Service\NotificationService;
+use App\Service\SearchService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -18,6 +19,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 
 #[Route('/api/posts')]
 class CommunityApiController extends AbstractController
@@ -29,27 +31,41 @@ class CommunityApiController extends AbstractController
         private ContentFilter $contentFilter,
         private UserRepository $userRepository,
         private PostReactionRepository $postReactionRepository,
-        private NotificationService $notificationService
+        private NotificationService $notificationService,
+        private SearchService $searchService,
+        private $apiSearchLimiter = null,
+        private $postReactionLimiter = null
     ) {
     }
 
     #[Route('', name: 'api_posts_list', methods: ['GET'])]
     public function list(Request $request): JsonResponse
     {
+        $categoryId = $request->query->get('category');
         $page = max(1, (int)$request->query->get('page', 1));
         $limit = min(50, max(1, (int)$request->query->get('limit', 20)));
-        $offset = ($page - 1) * $limit;
 
+        // Use regular database query with optional category filter
         $qb = $this->postRepository->createQueryBuilder('p')
+            ->leftJoin('p.category', 'c')
             ->orderBy('p.createdAt', 'DESC')
-            ->setFirstResult($offset)
+            ->setFirstResult(($page - 1) * $limit)
             ->setMaxResults($limit);
 
-        $total = (int)$this->postRepository->createQueryBuilder('p')
-            ->select('COUNT(p.id)')
-            ->getQuery()
-            ->getSingleScalarResult();
+        if ($categoryId) {
+            $qb->andWhere('p.category = :categoryId')
+               ->setParameter('categoryId', $categoryId);
+        }
 
+        $totalQb = $this->postRepository->createQueryBuilder('p')
+            ->select('COUNT(p.id)');
+        if ($categoryId) {
+            $totalQb->leftJoin('p.category', 'c')
+                   ->andWhere('p.category = :categoryId')
+                   ->setParameter('categoryId', $categoryId);
+        }
+
+        $total = (int)$totalQb->getQuery()->getSingleScalarResult();
         $posts = $qb->getQuery()->getResult();
 
         $data = array_map(function (Post $post) {
@@ -70,8 +86,23 @@ class CommunityApiController extends AbstractController
             'page' => $page,
             'limit' => $limit,
             'total' => $total,
-            'has_next' => $offset + $limit < $total,
+            'has_next' => (($page - 1) * $limit + count($posts)) < $total,
         ]);
+    }
+
+    #[Route('/search', name: 'api_posts_search', methods: ['GET'])]
+    public function search(Request $request): JsonResponse
+    {
+        $query = trim($request->query->get('q', ''));
+        $categoryId = $request->query->get('category');
+        $page = max(1, (int)$request->query->get('page', 1));
+        $limit = min(50, max(1, (int)$request->query->get('limit', 20)));
+
+        if (empty($query)) {
+            return new JsonResponse(['error' => 'Search query is required'], Response::HTTP_BAD_REQUEST);
+        }
+
+        return $this->searchPosts($query, $categoryId, $page, $limit);
     }
 
     #[Route('', name: 'api_posts_create', methods: ['POST'])]
@@ -322,15 +353,22 @@ class CommunityApiController extends AbstractController
 
     private function handleReaction(int $postId, string $type): JsonResponse
     {
+        // Debug logging
+        error_log("handleReaction called: postId=$postId, type=$type");
+
         $post = $this->postRepository->find($postId);
         if (!$post) {
+            error_log("Post not found: $postId");
             return new JsonResponse(['error' => 'Post not found'], Response::HTTP_NOT_FOUND);
         }
 
         $user = $this->getUser();
         if (!$user) {
+            error_log("User not authenticated");
             return new JsonResponse(['error' => 'Authentification requise'], Response::HTTP_UNAUTHORIZED);
         }
+
+        error_log("User authenticated: " . $user->getUuid());
 
         $reaction = $this->postReactionRepository->findOneByPostAndUser($post, $user->getUuid());
         $status = 'created';
@@ -381,6 +419,84 @@ class CommunityApiController extends AbstractController
             'message' => $status === 'unchanged'
                 ? 'Réaction déjà enregistrée.'
                 : 'Réaction mise à jour.',
+        ]);
+    }
+
+    /**
+     * Search posts using MeiliSearch
+     */
+    private function searchPosts(string $query, ?string $categoryId, int $page, int $limit): JsonResponse
+    {
+
+        $filters = [];
+        if ($categoryId) {
+            $filters['categoryId'] = $categoryId;
+        }
+
+        $searchResults = $this->searchService->searchPosts($query, $limit, $filters);
+
+        if (isset($searchResults['error'])) {
+            return new JsonResponse(['error' => 'Search service unavailable'], Response::HTTP_SERVICE_UNAVAILABLE);
+        }
+
+        // Get the actual Post entities from the database using the IDs from search results
+        $postIds = array_column($searchResults['hits'], 'id');
+        if (empty($postIds)) {
+            return new JsonResponse([
+                'data' => [],
+                'page' => $page,
+                'limit' => $limit,
+                'total' => 0,
+                'has_next' => false,
+                'query' => $query,
+            ]);
+        }
+
+                // Fetch posts with comments loaded for proper counting
+                $posts = $this->postRepository->createQueryBuilder('p')
+                    ->leftJoin('p.comments', 'c')
+                    ->addSelect('COUNT(c.id) as commentCount')
+                    ->where('p.id IN (:ids)')
+                    ->setParameter('ids', $postIds)
+                    ->groupBy('p.id')
+                    ->orderBy('p.createdAt', 'DESC') // Order by creation date as fallback
+                    ->getQuery()
+                    ->getResult();
+
+        // Create a map for quick lookup
+        $postsMap = [];
+        foreach ($posts as $post) {
+            $postsMap[$post[0]->getId()] = $post[0];
+        }
+
+        // Build the response data maintaining the order from search results
+        $data = [];
+        foreach ($searchResults['hits'] as $hit) {
+            $post = $postsMap[$hit['id']] ?? null;
+            if (!$post) {
+                continue;
+            }
+
+            $data[] = [
+                'id' => $post->getId(),
+                'author_uuid' => $post->getAuthorUuid(),
+                'content' => $post->getContent(),
+                'image_url' => $post->getImageUrl(),
+                'likes_count' => $post->getLikesCount(),
+                'dislikes_count' => $post->getDislikesCount(),
+                'created_at' => $post->getCreatedAt()->format('Y-m-d H:i:s'),
+                'comments_count' => $post->getComments()->count(),
+            ];
+        }
+
+        return new JsonResponse([
+            'data' => $data,
+            'page' => $page,
+            'limit' => $limit,
+            'total' => $searchResults['total'],
+            'has_next' => count($data) === $limit && ($page * $limit) < $searchResults['total'],
+            'query' => $query,
+            'processing_time_ms' => $searchResults['processing_time_ms'] ?? null,
         ]);
     }
 }

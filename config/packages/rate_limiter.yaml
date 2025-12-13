@@ -1,0 +1,36 @@
+framework:
+    rate_limiter:
+        # Rate limiter for creating posts - prevent spam
+        create_post:
+            policy: 'fixed_window'
+            limit: 5
+            interval: '1 minute'
+            lock_factory: null
+
+        # Rate limiter for creating comments - prevent flooding
+        create_comment:
+            policy: 'fixed_window'
+            limit: 5
+            interval: '1 minute'
+            lock_factory: null
+
+        # Rate limiter for liking posts - prevent abuse
+        post_reaction:
+            policy: 'sliding_window'
+            limit: 30
+            interval: '1 minute'
+            lock_factory: null
+
+        # Rate limiter for API search requests - prevent abuse
+        api_search:
+            policy: 'sliding_window'
+            limit: 20
+            interval: '1 minute'
+            lock_factory: null
+
+        # Rate limiter for login attempts - basic brute force protection
+        login:
+            policy: 'fixed_window'
+            limit: 5
+            interval: '15 minutes'
+            lock_factory: null

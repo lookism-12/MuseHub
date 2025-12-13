@@ -1,0 +1,164 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}
+    {{ action == 'new' ? 'Nouveau type d\'événement' : 'Modifier type d\'événement' }} - MuseHub Admin
+{% endblock %}
+
+{% block body %}
+<div class="mb-4 d-flex align-items-center gap-3">
+    <a href="{{ path('admin_event_types_list') }}" class="btn btn-link text-decoration-none">
+        <i class="fas fa-arrow-left me-2"></i>Retour
+    </a>
+    <div>
+        <h1 class="h3 mb-0">
+            {{ action == 'new' ? 'Créer un type d\'événement' : 'Modifier un type d\'événement' }}
+        </h1>
+        <p class="text-muted mb-0">Définir les caractéristiques du type d'événement</p>
+    </div>
+</div>
+
+{% set formAction = action == 'new'
+    ? path('admin_event_types_new')
+    : path('admin_event_types_edit', {id: eventType.id})
+%}
+{% set csrfIntention = action == 'new'
+    ? 'create_event_type'
+    : 'edit_event_type_' ~ eventType.id
+%}
+
+<div class="card" style="border-radius: 15px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <div class="card-body">
+        <form method="POST" action="{{ formAction }}">
+            <input type="hidden" name="_token" value="{{ csrf_token(csrfIntention) }}">
+            
+            <!-- Informations de base -->
+            <h5 class="mb-3"><i class="fas fa-info-circle me-2"></i>Informations de base</h5>
+            <div class="row g-3 mb-4">
+                <div class="col-md-12">
+                    <label class="form-label">Nom *</label>
+                    <input type="text" name="name" class="form-control" value="{{ eventType.name }}" required placeholder="Ex: Workshop">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Description</label>
+                    <textarea name="description" rows="2" class="form-control" placeholder="Description du type d'événement">{{ eventType.description }}</textarea>
+                </div>
+            </div>
+
+            <!-- Capacité -->
+            <h5 class="mb-3"><i class="fas fa-users me-2"></i>Capacité et durée</h5>
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label class="form-label">Type de capacité</label>
+                    <select name="capacity_type" class="form-select" id="capacityType">
+                        <option value="unlimited" {{ eventType.capacityType == 'unlimited' ? 'selected' : '' }}>Illimitée</option>
+                        <option value="limited" {{ eventType.capacityType == 'limited' ? 'selected' : '' }}>Limitée</option>
+                        <option value="invite_only" {{ eventType.capacityType == 'invite_only' ? 'selected' : '' }}>Sur invitation</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Max participants</label>
+                    <input type="number" name="default_max_participants" class="form-control" value="{{ eventType.defaultMaxParticipants }}" min="1" placeholder="Ex: 50">
+                    <small class="text-muted">Si capacité limitée</small>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Durée typique (heures)</label>
+                    <input type="number" name="typical_duration_hours" class="form-control" value="{{ eventType.typicalDurationHours }}" min="1" placeholder="Ex: 3">
+                </div>
+            </div>
+
+            <!-- Localisation -->
+            <h5 class="mb-3"><i class="fas fa-map-marker-alt me-2"></i>Localisation et visibilité</h5>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Localisation autorisée</label>
+                    <select name="allowed_location" class="form-select">
+                        <option value="both" {{ eventType.allowedLocation == 'both' ? 'selected' : '' }}>Online et Offline</option>
+                        <option value="online" {{ eventType.allowedLocation == 'online' ? 'selected' : '' }}>Online uniquement</option>
+                        <option value="offline" {{ eventType.allowedLocation == 'offline' ? 'selected' : '' }}>Offline uniquement</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Visibilité</label>
+                    <select name="visibility" class="form-select">
+                        <option value="public" {{ eventType.visibility == 'public' ? 'selected' : '' }}>Public</option>
+                        <option value="private" {{ eventType.visibility == 'private' ? 'selected' : '' }}>Privé</option>
+                        <option value="members_only" {{ eventType.visibility == 'members_only' ? 'selected' : '' }}>Membres uniquement</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Caractéristiques -->
+            <h5 class="mb-3"><i class="fas fa-cog me-2"></i>Caractéristiques</h5>
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="requiresPayment" name="requires_payment" value="1" {{ eventType.requiresPayment ? 'checked' : '' }}>
+                        <label class="form-check-label" for="requiresPayment">
+                            💰 Payant
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="certificateEnabled" name="certificate_enabled" value="1" {{ eventType.certificateEnabled ? 'checked' : '' }}>
+                        <label class="form-check-label" for="certificateEnabled">
+                            🎓 Certificat de participation
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="recordingEnabled" name="recording_enabled" value="1" {{ eventType.recordingEnabled ? 'checked' : '' }}>
+                        <label class="form-check-label" for="recordingEnabled">
+                            🎥 Enregistrement possible
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Paramètres -->
+            <h5 class="mb-3"><i class="fas fa-sliders-h me-2"></i>Paramètres</h5>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Ordre d'affichage</label>
+                    <input type="number" name="sort_order" class="form-control" value="{{ eventType.sortOrder ?? 0 }}" min="0">
+                    <small class="text-muted">Plus petit = affiché en premier</small>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Statut</label>
+                    <div class="form-check form-switch mt-2">
+                        <input class="form-check-input" type="checkbox" id="isActive" name="is_active" value="1" {{ eventType.isActive ?? true ? 'checked' : '' }}>
+                        <label class="form-check-label" for="isActive">Type actif</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-3 mt-4">
+                <a href="{{ path('admin_event_types_list') }}" class="btn btn-outline-secondary">Annuler</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i>{{ action == 'new' ? 'Créer' : 'Mettre à jour' }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const capacityType = document.getElementById('capacityType');
+    const maxParticipants = document.querySelector('input[name="default_max_participants"]');
+    
+    function updateMaxParticipants() {
+        if (capacityType.value === 'unlimited') {
+            maxParticipants.disabled = true;
+            maxParticipants.value = '';
+        } else {
+            maxParticipants.disabled = false;
+        }
+    }
+    
+    capacityType.addEventListener('change', updateMaxParticipants);
+    updateMaxParticipants();
+});
+</script>
+{% endblock %}

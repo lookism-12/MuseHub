@@ -20,7 +20,7 @@ class Post
     #[ORM\Column(type:"string", nullable:true)]
     private ?string $imageUrl = null;
 
-    #[ORM\ManyToOne(targetEntity: PostCategory::class)]
+    #[ORM\ManyToOne(targetEntity: PostCategory::class, inversedBy: "posts")]
     #[ORM\JoinColumn(nullable: true)]
     private ?PostCategory $category = null;
 
@@ -32,6 +32,12 @@ class Post
 
     #[ORM\Column(type:"integer")]
     private int $dislikesCount = 0;
+
+    #[ORM\Column(type:"string", nullable:true)]
+    private ?string $moderationStatus = 'approved'; // approved, flagged, pending
+
+    #[ORM\Column(type:"json", nullable:true)]
+    private ?array $moderationDetails = null;
 
     #[ORM\OneToMany(mappedBy: "post", targetEntity: Comment::class, cascade:["remove"], orphanRemoval:true)]
     private Collection $comments;
@@ -72,6 +78,15 @@ class Post
     public function setDislikesCount(int $count): self { $this->dislikesCount = max(0, $count); return $this; }
     public function incrementDislikes(): self { $this->dislikesCount++; return $this; }
     public function decrementDislikes(): self { $this->dislikesCount = max(0, $this->dislikesCount - 1); return $this; }
+
+    public function getModerationStatus(): ?string { return $this->moderationStatus; }
+    public function setModerationStatus(?string $moderationStatus): self { $this->moderationStatus = $moderationStatus; return $this; }
+
+    public function getModerationDetails(): ?array { return $this->moderationDetails; }
+    public function setModerationDetails(?array $moderationDetails): self { $this->moderationDetails = $moderationDetails; return $this; }
+
+    public function isFlagged(): bool { return $this->moderationStatus === 'flagged'; }
+    public function isApproved(): bool { return $this->moderationStatus === 'approved'; }
 
     public function getComments(): Collection { return $this->comments; }
     public function getReactions(): Collection { return $this->reactions; }
